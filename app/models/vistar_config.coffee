@@ -5,3 +5,5 @@ module.exports = class VistarConfig
     @apiKey = params.apiKey
     @width = params.width
     @height = params.height
+    @deviceId = params.deviceId
+    @allowAudio = params.allowAudio

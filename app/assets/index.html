@@ -14,6 +14,27 @@
   <script>require('initialize');</script>
 </head>
 <body>
+  <script type="text/javascript">
+    VistarConfig = require('../models/vistar_config')
+    VistarPlayer = require('../models/vistar_player')
 
+    $(document).ready(function() {
+      config = new VistarConfig({
+        apiKey:     "eb7d6e26-5930-4fef-a3c7-aa023f31cefd",
+        networkId:  "24ba0582-7648-48b2-a7f4-0af3783b55f0",
+        width:      1280,
+        height:     720,
+        allowAudio: true,
+        deviceId:   "VistarDisplay0"
+      });
+
+      $imagePlayer = $('#image-player')
+      $videoPlayer = $('#video-player')
+
+      player = new VistarPlayer(config, $imagePlayer, $videoPlayer)
+
+      player.play()
+    });
+  </script>
 </body>
 </html>

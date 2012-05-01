@@ -5,7 +5,7 @@ module.exports = class Api
     @request = """{ 
                    "network_id": "#{@config.networkId}",
                    "api_key": "#{@config.apiKey}",
-                   "device_id": "VistarMedia0",
+                   "device_id": "#{@config.deviceId}",
                    "number_of_screens": 1, 
                    "display_area": [
                    { 
@@ -21,13 +21,13 @@ module.exports = class Api
                      ], 
                      "min_duration": null,
                      "max_duration": null,
-                     "allow_audio": true
+                     "allow_audio": #{@config.allowAudio}
                    }  
                    ],
                    "latitude": null,
                    "longitude": null,
-                   "display_time": 1335550884,
-                   "direct_connection": false
+                   "display_time": #{Math.floor(new Date().getTime() / 1000)},
+                   "direct_connection": true
                  }"""
 
   fetch: (params) ->
