@@ -26,7 +26,7 @@ module.exports = class Api
                    ],
                    "latitude": null,
                    "longitude": null,
-                   "display_time": #{Math.floor(new Date().getTime() / 1000)},
+                   "display_time": ~DISPLAY_TIME~
                    "direct_connection": true
                  }"""
 
@@ -34,7 +34,7 @@ module.exports = class Api
     $.ajax
       type:         'POST'
       url:          'http://dev.api.vistarmedia.com/api/v1/get_ad/json'
-      data:         @request
+      data:         @request.replace('~DISPLAY_TIME~', "#{Math.floor(new Date().getTime() / 1000)}")
       
       success:      (data) =>
                       params.success(ad) for ad in data.advertisement
