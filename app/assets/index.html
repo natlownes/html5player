@@ -18,6 +18,11 @@
     VistarConfig = require('../models/vistar_config')
     VistarPlayer = require('../models/vistar_player')
 
+    mimeTypes = [];
+    $.map($(navigator.mimeTypes), function(val, i) {
+      mimeTypes.push(val.type);
+    });
+
     $(document).ready(function() {
       config = new VistarConfig({
         apiKey:     "eb7d6e26-5930-4fef-a3c7-aa023f31cefd",
@@ -25,7 +30,9 @@
         width:      1280,
         height:     720,
         allowAudio: true,
-        deviceId:   "VistarDisplay0"
+        deviceId:   "VistarDisplay0",
+        userAgent:  navigator.userAgent,
+        mimeTypes:  mimeTypes
       });
 
       $imagePlayer = $('#image-player')

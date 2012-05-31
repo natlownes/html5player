@@ -7,3 +7,5 @@ module.exports = class VistarConfig
     @height = params.height
     @deviceId = params.deviceId
     @allowAudio = params.allowAudio
+    @userAgent = params.userAgent
+    @mimeTypes = params.mimeTypes

@@ -27,7 +27,17 @@ module.exports = class Api
                    "latitude": null,
                    "longitude": null,
                    "display_time": ~DISPLAY_TIME~
-                   "direct_connection": true
+                   "direct_connection": true,
+                   "device_attribute": [
+                   {
+                     "name": "UserAgent",
+                     "value": "#{@config.userAgent}"
+                   },
+                   {
+                     "name": "MimeTypes",
+                     "value": "#{@config.mimeTypes.join(', ')}"
+                   }
+                   ]
                  }"""
 
   fetch: (params) ->
