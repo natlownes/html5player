@@ -43,7 +43,7 @@ module.exports = class Api
   fetch: (params) ->
     $.ajax
       type:         'POST'
-      url:          'http://dev.api.vistarmedia.com/api/v1/get_ad/json'
+      url:          "http://#{@config.host}/api/v1/get_ad/json"
       data:         @request.replace('~DISPLAY_TIME~', "#{Math.floor(new Date().getTime() / 1000)}")
 
       success:      (data) =>

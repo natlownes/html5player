@@ -1,5 +1,5 @@
 module.exports = class VistarConfig
-  
+
   constructor: (params) ->
     @networkId = params.networkId
     @apiKey = params.apiKey
@@ -9,3 +9,4 @@ module.exports = class VistarConfig
     @allowAudio = params.allowAudio
     @userAgent = params.userAgent
     @mimeTypes = params.mimeTypes
+    @host = params.host
