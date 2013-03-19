@@ -44,10 +44,13 @@ module.exports = class Api
     $.ajax
       type:         'POST'
       url:          "http://#{@config.host}/api/v1/get_ad/json"
-      data:         @request.replace('~DISPLAY_TIME~', "#{Math.floor(new Date().getTime() / 1000)}")
+      data:         @request.replace(
+                      '~DISPLAY_TIME~',
+                      "#{Math.floor(new Date().getTime() / 1000)}")
 
       success:      (data) =>
-                      params.success(ad) for ad in data.advertisement
+                      if data.advertisement?
+                        params.success(ad) for ad in data.advertisement
 
       error:        params.error
       dataType:     'json'
