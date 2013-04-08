@@ -10,3 +10,4 @@ module.exports = class VistarConfig
     @userAgent = params.userAgent
     @mimeTypes = params.mimeTypes
     @host = params.host
+    @venueId = params.venueId

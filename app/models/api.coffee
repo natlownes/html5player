@@ -6,6 +6,7 @@ module.exports = class Api
                    "network_id": "#{@config.networkId}",
                    "api_key": "#{@config.apiKey}",
                    "device_id": "#{@config.deviceId}",
+                   "venue_id": "#{@config.venueId}",
                    "number_of_screens": 1,
                    "display_area": [
                    {
