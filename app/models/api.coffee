@@ -27,7 +27,7 @@ module.exports = class Api
                    ],
                    "latitude": null,
                    "longitude": null,
-                   "display_time": ~DISPLAY_TIME~
+                   "display_time": ~DISPLAY_TIME~,
                    "direct_connection": true,
                    "device_attribute": [
                    {
