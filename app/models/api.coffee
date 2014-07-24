@@ -25,8 +25,8 @@ module.exports = class Api
                      "allow_audio": #{@config.allowAudio}
                    }
                    ],
-                   "latitude": null,
-                   "longitude": null,
+                   "latitude": #{@config.latitude},
+                   "longitude": #{@config.longitude},
                    "display_time": ~DISPLAY_TIME~,
                    "direct_connection": true,
                    "device_attribute": [
