@@ -18,11 +18,6 @@
     VistarConfig = require('../models/vistar_config')
     VistarPlayer = require('../models/vistar_player')
 
-    mimeTypes = [];
-    $.map($(navigator.mimeTypes), function(val, i) {
-      mimeTypes.push(val.type);
-    });
-
     $(document).ready(function() {
       config = new VistarConfig({
         host:       "staging.api.vistarmedia.com",
@@ -35,8 +30,7 @@
         venueId:    "YOUR_VENUE_ID",
         latitude:   null,
         longitude:  null,
-        userAgent:  navigator.userAgent,
-        mimeTypes:  mimeTypes
+        userAgent:  navigator.userAgent
       });
 
       $imagePlayer = $('#image-player')
