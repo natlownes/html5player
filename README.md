@@ -1,7 +1,23 @@
+# html5player
+
+[![Build Status](https://travis-ci.org/vistarmedia/html5player.svg)](https://travis-ci.org/vistarmedia/html5player)
+
 An HTML 5 Player for Vistar Media assets.
 
-Documentation can be found here:
+### Building as a web app
 
-http://kb.vistarmedia.com/display/sell/HTML5+Player
+`make build`
 
-Note: To view the docs, you will need a login to the Vistar Media Knowledge Base
+The full app will be in the `build` directory.
+
+### Building for Cortex
+
+`make package`
+
+A zipfile will be in your current directory.  This can be uploaded through the
+Cortex UI.
+
+### As a standalone app
+
+There is an example of using this in
+[https://github.com/vistarmedia/html5player/blob/master/src/app.coffee](src/app.coffee).

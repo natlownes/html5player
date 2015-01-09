@@ -1,35 +1,51 @@
 {
-  "author": "Vistar Media <engineering@vistarmedia.com>",
-  "name": "html5player",
-  "description": "An HTML 5 Player for Vistar Media assets.",
-  "version": "0.0.2",
-  "homepage": "http://kb.vistarmedia.com/display/sell/HTML5+Player",
+  "author":       "Vistar Media <engineering@vistarmedia.com>",
+  "name":         "vistar-html5player",
+  "description":  "An HTML 5 Player for Vistar Media assets.",
+  "version":      "1.0.2",
+  "homepage":     "http://kb.vistarmedia.com/display/sell/HTML5+Player",
   "repository": {
-    "type": "git",
-    "url": "https://github.com/vistarmedia/html5player.git"
+    "type":  "git",
+    "url":   "https://github.com/vistarmedia/html5player.git"
   },
+  "main": "lib/index.js",
+  "files": ["lib"],
   "engines": {
-    "node": "~0.6.10"
+    "node": "~0.10.x"
   },
   "scripts": {
-    "start": "brunch watch --server"
+    "ci:test":        "gulp test:xunit",
+    "test":           "gulp test",
+    "test:watch":     "gulp test:watch",
+    "watch":          "gulp watch"
   },
   "dependencies": {
-    "javascript-brunch": "1.0.x || 1.1.x",
-    "coffee-script-brunch": "1.0.x || 1.1.x",
-
-    "css-brunch": "1.0.x || 1.1.x",
-    "stylus-brunch": "1.0.x || 1.1.x",
-
-    "handlebars-brunch": "1.0.x || 1.1.x",
-
-    "uglify-js-brunch": "1.0.x || 1.1.x",
-    "clean-css-brunch": "1.0.x || 1.1.x"
+    "deferred":           "0.7.1",
+    "honk-di":            "0.0.10",
+    "react":              "0.12.x"
   },
   "devDependencies": {
-    "brunch": "1.7.14",
-    "mocha": "0.14.0",
-    "expect.js": "0.1.2",
-    "coffee-script": "^1.7.1"
+    "chai":                "1.9.x",
+    "coffee-react":        "2.1.x",
+    "coffee-reactify":     "2.x",
+    "coffee-script":       "1.7.x",
+    "coffeeify":           "1.0.0",
+    "connect":             "2.25.7",
+    "connect-livereload":  "0.4.0",
+    "domino":              "1.0.17",
+    "gulp":                "3.8.x",
+    "gulp-browserify":     "0.5.x",
+    "gulp-cjsx":           "2.0.x",
+    "gulp-coffee":         "2.2.0",
+    "gulp-concat":         "2.2.x",
+    "gulp-less":           "1.3.x",
+    "gulp-livereload":     "2.1.0",
+    "gulp-mocha":          "1.1.0",
+    "gulp-util":           "2.2.x",
+    "honk-test-net":       "0.1.0",
+    "mocha":               "^1",
+    "serve-static":        "1.5.3",
+    "sinon":               "1.12.2",
+    "sinon-chai":          "2.6.0"
   }
 }
