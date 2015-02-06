@@ -1,11 +1,13 @@
+AdRequest           = require './ad_request'
 AdStream            = require './ad_stream'
+App                 = require './app'
 Player              = require './player'
 ProofOfPlay         = require './proof_of_play'
-App                 = require './app'
 {Ajax, XMLHttpAjax} = require './ajax'
 
 
 module.exports = {
+  AdRequest
   AdStream
   Ajax
   Player
