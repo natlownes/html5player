@@ -24,9 +24,13 @@ class XMLHttpAjax extends Ajax
     url    = options.url
 
     xhr = new window.XMLHttpRequest()
+    if options.responseType
+      xhr.responseType = options.responseType
 
     xhr.onload = (e) =>
       if xhr.status is 200
+        if options.responseType == 'blob'
+          return deferred.resolve(xhr.response)
         switch options.dataType
           when 'json' then deferred.resolve(JSON.parse(xhr.responseText))
           else deferred.resolve(xhr.responseText)

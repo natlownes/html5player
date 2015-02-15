@@ -5,8 +5,6 @@ Logger    = require './logger'
 
 
 class AdStream extends Readable
-  @scope: 'SINGLETON'
-
   config:          inject 'config'
   log:             inject Logger
   request:         inject AdRequest
@@ -18,16 +16,31 @@ class AdStream extends Readable
 
   _read: ->
     @log.write name: 'AdStream', message:
-      "begin read, buf length #{@_readableState.buffer.length}"
-    success = (response) ->
+      """
+      begin _read, readableState buffer len #{@_readableState.buffer.length},
+      flowing #{@_readableState.flowing}, reading #{@_readableState.reading},
+      len #{@_readableState.length}
+      """
+    success = (response) =>
       for ad in (response?.advertisement or [])
         @push(ad)
+        @log.write name: 'AdStream', message:
+          """
+          pushed ad #{ad.asset_url},
+          readableState buffer len #{@_readableState.buffer.length},
+          flowing #{@_readableState.flowing}, reading #{@_readableState.reading},
+          len #{@_readableState.length}
+          """
     @request.fetch().then(success.bind(this)).done()
 
   _check: =>
-    if @_readableState.buffer.length is 0
-      @log.write name: 'AdStream', message: 'buffer empty, initiating read'
-      @read()
+    if @_readableState.length < @_lowWaterMark()
+      @log.write name: 'AdStream',
+        message: "buffer #{@_readableState.length}, making request"
+      @read(0)
+
+  _lowWaterMark: ->
+    @_readableState.highWaterMark / 2
 
 
 module.exports = AdStream

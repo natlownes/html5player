@@ -1,15 +1,36 @@
 require './test_case'
 sinon    = require 'sinon'
-{stub}   = sinon
 {expect} = require 'chai'
+through2 = require 'through2'
 
 ProofOfPlay = require '../src/proof_of_play'
+{Ajax}      = require '../src/ajax'
 
 
 describe 'ProofOfPlay', ->
 
   beforeEach ->
-    @pop = @injector.getInstance ProofOfPlay
+    @pop  = @injector.getInstance ProofOfPlay
+    @http = @injector.getInstance Ajax
+
+  it 'should not fill the _readableState.buffer if not piped to anything', ->
+    ad =
+      id: 'some-id'
+      expiration_url: 'http://pop.example.com/expire?v=1'
+      html5player:
+        was_played: false
+
+    @http.match url: ad.expiration_url, type: 'GET', (req, resolve) =>
+      resolve @fixtures.expireResponse
+
+    processFunc = sinon.spy(@pop, '_process')
+
+    @pop.write(ad)
+    @pop.write(ad)
+    @pop.write(ad)
+
+    expect(processFunc.callCount).to.equal 3
+    expect(@pop._readableState.length).to.equal 0
 
   it 'should expire an advertisement if not html5player.was_played', (done) ->
     ad =
@@ -18,9 +39,8 @@ describe 'ProofOfPlay', ->
       html5player:
         was_played: false
 
-    @server.when 'GET', 'http://pop.example.com/expire?v=1', =>
-      status: 200
-      body: JSON.stringify @fixtures.expireResponse
+    @http.match url: ad.expiration_url, type: 'GET', (req, resolve) =>
+      resolve @fixtures.expireResponse
       done()
 
     @pop.write(ad)
@@ -32,61 +52,59 @@ describe 'ProofOfPlay', ->
       html5player:
         was_played: true
 
-    @server.when 'POST', 'http://pop.example.com/played?v=1', =>
-      status: 200
-      body:   JSON.stringify @fixtures.popResponse
+    @http.match url: ad.proof_of_play_url, type: 'GET', (req, resolve) =>
+      resolve @fixtures.popResponse
       done()
 
     @pop.write(ad)
 
-  it 'should emit the PoP response after PoP request success', (done) ->
-    ad =
-      id: 'some-id'
-      proof_of_play_url: 'http://pop.example.com/played?v=1'
-      html5player:
-        was_played: true
+  context 'when piped to a consuming stream', ->
 
-    @server.when 'POST', 'http://pop.example.com/played?v=1', =>
-      status: 200
-      body:   JSON.stringify @fixtures.popResponse
+    it 'should pipe the PoP response after PoP request success', (done) ->
+      ad =
+        id: 'some-id'
+        proof_of_play_url: 'http://pop.example.com/played?v=1'
+        html5player:
+          was_played: true
 
-    @pop.on 'data', (response) =>
-      expect(response).to.deep.equal @fixtures.popResponse
-      done()
+      @http.match url: ad.proof_of_play_url, type: 'GET', (req, resolve) =>
+        resolve @fixtures.popResponse
 
-    @pop.write(ad)
+      @pop.pipe through2.obj (response) =>
+        expect(response).to.deep.equal @fixtures.popResponse
+        done()
 
-  it 'should emit the expire response after expire request success', (done) ->
-    ad =
-      id: 'some-id'
-      expiration_url: 'http://pop.example.com/expire?v=1'
-      html5player:
-        was_played: false
+      @pop.write(ad)
 
-    @server.when 'GET', 'http://pop.example.com/expire?v=1', =>
-      status: 200
-      body:   JSON.stringify @fixtures.expireResponse
+    it 'should emit the expire response after expire request success', (done) ->
+      ad =
+        id: 'some-id'
+        expiration_url: 'http://pop.example.com/expire?v=1'
+        html5player:
+          was_played: false
 
-    @pop.on 'data', (response) =>
-      expect(response).to.deep.equal @fixtures.expireResponse
-      done()
+      @http.match url: ad.expiration_url, type: 'GET', (req, resolve) =>
+        resolve @fixtures.expireResponse
 
-    @pop.write(ad)
+      @pop.pipe through2.obj (response) =>
+        expect(response).to.deep.equal @fixtures.expireResponse
+        done()
+
+      @pop.write(ad)
 
   describe '#expire', ->
 
     context 'on success', ->
 
-      it 'should return a deferred which will resolve with the response', (done) ->
+      it 'should return a promise to resolve with the response', (done) ->
         ad =
           id: 'some-id'
           expiration_url: 'http://pop.example.com/expire?v=1'
           html5player:
             was_played: false
 
-        @server.when 'GET', 'http://pop.example.com/expire?v=1', =>
-          status: 200
-          body: JSON.stringify @fixtures.expireResponse
+        @http.match url: ad.expiration_url, type: 'GET', (req, resolve) =>
+          resolve @fixtures.expireResponse
 
         verify = (response) =>
           expect(response).to.deep.equal @fixtures.expireResponse
@@ -102,11 +120,12 @@ describe 'ProofOfPlay', ->
         display_time: 1420824124
         proof_of_play_url: 'http://pop.example.com/pop?v=1'
 
-      @server.when 'POST', 'http://pop.example.com/pop?v=1', (req) =>
-        expect(JSON.parse(req.requestText).display_time).to.equal 1420824124
-        done()
+      @http.match url: ad.proof_of_play_url, type: 'POST', (req, resolve) =>
+        expect(JSON.parse(req.data).display_time).to.equal 1420824124
+        resolve @fixtures.popResponse
 
-      @pop.confirm(ad)
+      @pop.confirm(ad).then (response) ->
+        done()
 
     context 'on success', ->
 
@@ -116,9 +135,8 @@ describe 'ProofOfPlay', ->
           display_time: 140432423
           proof_of_play_url: 'http://pop.example.com/pop?v=1'
 
-        @server.when 'POST', 'http://pop.example.com/pop?v=1', =>
-          status: 200
-          body: JSON.stringify @fixtures.popResponse
+        @http.match url: ad.proof_of_play_url, type: 'GET', (req, resolve) =>
+          resolve @fixtures.popResponse
 
         verify = (response) =>
           expect(response).to.deep.equal @fixtures.popResponse
