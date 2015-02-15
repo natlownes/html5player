@@ -12,6 +12,7 @@ build: deps
 
 clean:
 	@find . -maxdepth 1 -iname '$(PROJECT_NAME)-*.zip' -print0 | xargs -0 rm -f
+	@rm -rf lib/*
 
 copy_manifest:
 	@cp manifest.json build/manifest.json

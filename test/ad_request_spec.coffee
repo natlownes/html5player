@@ -2,6 +2,7 @@ require './test_case'
 {expect} = require 'chai'
 
 AdRequest = require '../src/ad_request'
+{Ajax}    = require '../src/ajax'
 
 
 describe 'AdRequest', ->
@@ -9,6 +10,7 @@ describe 'AdRequest', ->
   beforeEach ->
     @config  = @injector.getInstance 'config'
     @request = @injector.getInstance AdRequest
+    @http    = @injector.getInstance Ajax
 
   it 'should inject a config', ->
     expect(@request.config).to.equal @injector.getInstance 'config'
@@ -19,9 +21,8 @@ describe 'AdRequest', ->
 
   it 'should make a POST request to the get_ad endpoint', (done) ->
     url = 'http://test.api.vistarmedia.com/api/v1/get_ad/json'
-    @server.when 'POST', url, (req) =>
-      status: 200
-      body:   JSON.stringify(@fixtures.adResponse)
+    @http.match url: url, type: 'POST', (req, resolve) ->
+      done()
 
     @request.fetch().then -> done()
 
@@ -85,37 +86,32 @@ describe 'AdRequest', ->
 
     it 'should include mime types in display_area supported_media', (done) ->
       url = 'http://test.api.vistarmedia.com/api/v1/get_ad/json'
-      @server.when 'POST', url, (req) =>
-        requestBody = JSON.parse(req.requestText)
+      @http.match url: url, type: 'POST', (req, resolve) ->
+        requestBody = JSON.parse(req.data)
         mimeTypes = requestBody.display_area[0].supported_media
         expect(mimeTypes).to.exist
         expect(mimeTypes).to.include 'image/png'
         expect(mimeTypes).to.include 'image/jpeg'
         expect(mimeTypes).to.include 'image/gif'
         done()
-        status: 200
-        body:   JSON.stringify(@fixtures.adResponse)
 
       @request.fetch()
 
-    it 'should POST an add request of the expected format', (done) ->
+    it 'should POST an ad request of the expected format', (done) ->
       url = 'http://test.api.vistarmedia.com/api/v1/get_ad/json'
-      @server.when 'POST', url, (req) =>
-        requestBody = JSON.parse(req.requestText)
+      @http.match url: url, type: 'POST', (req, resolve) ->
+        requestBody = JSON.parse(req.data)
         expect(requestBody.network_id).to.exist
         expect(requestBody.api_key).to.exist
         expect(requestBody.display_area).to.have.length 1
         done()
-        status: 200
-        body:   JSON.stringify(@fixtures.adResponse)
 
       @request.fetch()
 
     it 'should resolve with the ad response', (done) ->
       url = 'http://test.api.vistarmedia.com/api/v1/get_ad/json'
-      @server.when 'POST', url, (req) =>
-        status: 200
-        body:   JSON.stringify(@fixtures.adResponse)
+      @http.match url: url, type: 'POST', (req, resolve) =>
+        resolve @fixtures.adResponse
 
       success = (response) ->
         expect(response).to.be.an.instanceOf Object

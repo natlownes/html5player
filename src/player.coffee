@@ -14,7 +14,7 @@ class Player extends Transform
   _currentAd:  null
 
   constructor: ->
-    super(highWaterMark: @config.queueSize, objectMode: true)
+    super(highWaterMark: 0, objectMode: true)
     @video.addEventListener 'ended', @_videoFinished
     @video.addEventListener 'play', =>
       @log.write name: 'Player', message: 'video playing'
@@ -34,19 +34,23 @@ class Player extends Transform
       callback(null, ad)
 
     @image.setAttribute 'src', advertisement.asset_url
+
     @log.write name: 'Player', message: 'image playing'
     @image.className = ''
 
     @_timeoutId = setTimeout finished, duration
 
-  playVideo: (advertisement) ->
+  playVideo: (advertisement, callback) ->
     @hide()
-    duration = advertisement.length_in_milliseconds
     @video.setAttribute 'src', advertisement.asset_url
 
   _transform: (advertisement, encoding, callback) ->
     @log.write name: 'Player', message:
-      "receiving advertisement, buf length #{@_writableState.buffer.length}"
+      """
+      receiving advertisement:
+      writable buf length #{@_writableState.buffer.length}"
+      readable buf length #{@_readableState.buffer.length}"
+      """
     @_currentAd = advertisement
     mimeType    = advertisement.mime_type
     if advertisement.mime_type.match(/^image/)
