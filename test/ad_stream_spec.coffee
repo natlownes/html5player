@@ -1,15 +1,18 @@
 require './test_case'
 sinon    = require 'sinon'
+through2 = require 'through2'
 {expect} = require 'chai'
 
-AdStream  = require '../src/ad_stream'
 AdRequest = require '../src/ad_request'
+AdStream  = require '../src/ad_stream'
+{Ajax}    = require '../src/ajax'
 
 
 describe 'AdStream', ->
 
   beforeEach ->
-    @ads = @injector.getInstance AdStream
+    @ads  = @injector.getInstance AdStream
+    @http = @injector.getInstance Ajax
 
   it 'should be a readable stream', ->
     expect(@ads).to.respondTo 'read'
@@ -24,14 +27,15 @@ describe 'AdStream', ->
   context 'on successful ad request', ->
 
     beforeEach ->
-      url = 'http://test.api.vistarmedia.com/api/v1/get_ad/json'
-      id  = 0
-      @server.when 'POST', url, (req) =>
+      url     = 'http://test.api.vistarmedia.com/api/v1/get_ad/json'
+      id      = 0
+
+      @http.match url: url, type: 'POST', (req, resolve) =>
         ads = for ad in @fixtures.adResponse.advertisement
+          ad = @clone(ad)
           ad.id = "id-#{++id}"
           ad
-        status: 200
-        body:   JSON.stringify(advertisement: ads)
+        resolve advertisement: ads
 
     it 'should return an ad for each call to `read`', ->
       ad1 = @ads.read()
@@ -54,9 +58,8 @@ describe 'AdStream', ->
     beforeEach ->
       url = 'http://test.api.vistarmedia.com/api/v1/get_ad/json'
       id  = 0
-      @server.when 'POST', url, (req) =>
-        status: 200
-        body:   JSON.stringify([])
+      @http.match url: url, type: 'POST', (req, resolve) =>
+        resolve advertisement: []
 
     it.skip 'should call `read` again after 15 seconds', ->
       # TODO:  figure out why fake timers don't work here

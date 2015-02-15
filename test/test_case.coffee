@@ -1,16 +1,17 @@
 require './test_dom'
 inject = require 'honk-di'
 chai   = require 'chai'
-
-{Ajax, XMLHttpAjax} = require '../src/ajax'
-
 chai.use(require('sinon-chai'))
+
+{Ajax}   = require '../src/ajax'
+TestAjax = require './test_ajax'
+
 
 
 beforeEach ->
   class Binder extends inject.Binder
     configure: ->
-      @bind(Ajax).to(XMLHttpAjax)
+      @bind(Ajax).to(TestAjax)
       @bindConstant('navigator').to
         mimeTypes: [
           type: 'text/x-navigator-mime-type'
@@ -44,6 +45,9 @@ beforeEach ->
         ]
 
   @injector = new inject.Injector(new Binder)
+
+  @clone = (obj) -> JSON.parse(JSON.stringify(obj))
+
   @fixtures =
     expireResponse:
       impressions:  0.0
@@ -97,6 +101,3 @@ beforeEach ->
           creative_category:       '10013'
         },
       ]
-
-afterEach ->
-  @server.stop()

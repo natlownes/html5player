@@ -14,6 +14,7 @@ _initDocument = ->
   global.Blob                 = stub()
   global.URL                  = stub()
   global.URL.createObjectURL  = stub()
+  global.URL.revokeObjectURL  = stub()
 
   player = document.createElement('div')
   video  = document.createElement('video')
@@ -35,12 +36,6 @@ _destroyWindow = ->
 # with DOM elements.
 beforeEach ->
   window  = _initDocument()
-  # requiring honk-test-net down here because if it's required before a
-  # global.document exists, it'll require 'jsdom' and set one
-  {HttpServer} = require 'honk-test-net/lib/index'
-  @server = new HttpServer(window)
-  @server.start()
-
   React     = require('react')
   TestUtils = require('react/addons').addons.TestUtils
 
@@ -71,7 +66,6 @@ beforeEach ->
 
 # Nuke the global state of window/document/navigator
 afterEach ->
-  @server.stop()
   React = require('react')
   for node in @_nodes
     React.unmountComponentAtNode(node)
