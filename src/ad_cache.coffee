@@ -1,7 +1,6 @@
 inject      = require 'honk-di'
 Logger      = require './logger'
-net         = window?.Cortex?.net
-{Ajax}      = require './ajax'
+{Download}  = require './ajax'
 {Transform} = require('stream')
 
 now = -> (new Date).getTime()
@@ -13,45 +12,26 @@ cacheClearInterval = 15 * 60 * 1000
 # no safeguard to ensure the url isn't expired before it gets to the player
 defaultTtl         = 6 * 60 * 60 * 1000
 
-sum = (list, acc=0) ->
-  if list?.length is 0
-    acc
-  else
-    [head, tail...] = list
-    sum(tail, head + acc)
-
 
 class AdCache extends Transform
   config:          inject 'config'
-  http:            inject Ajax
+  http:            inject Download
   log:             inject Logger
-  sizeInBytes:     0
 
   constructor: (@store={}, @ttl=defaultTtl) ->
-    @sizeInBytes = sum(o.sizeInBytes for url, o of @store)
     setInterval @expire, cacheClearInterval
     super(objectMode: true, highWaterMark: 60)
 
   fetchPathByAssetURL: (url, cb) ->
-    # call callback with either a local path (from Cortex) or an objectURL from
-    # URL.createObjectURL
-    success = (response) =>
-      dataUrl = URL.createObjectURL(response)
-
+    success = (path) =>
       @store[url] =
         cachedAt:     now()
         lastSeenAt:   now()
-        dataUrl:      dataUrl
-        sizeInBytes:  response.size
-        mimeType:     response.type
-
-      @sizeInBytes  = @sizeInBytes + response.size
-      cb(dataUrl)
+        dataUrl:      path
+      cb(path)
 
     if not @store[url]
-      request = @http.request
-        responseType:  'blob'
-        url:           url
+      request = @http.request url: url, ttl: @ttl
       request.then(success)
     else
       @store[url].lastSeenAt = now()
@@ -83,23 +63,14 @@ class AdCache extends Transform
       write length #{@_writableState.buffer.length}
       """
 
-    if net?.download
-      # TODO:  Hamza says the api for this will change from returning a promise
-      # to the usual node.js (err, callback) -> style.  keep an eye out for that
-      # and change this when applicable
-      net.download(url, cache: @ttl).then (path) =>
-        ad.asset_url = path
-        @push(ad)
-        callback()
-    else
-      @fetchPathByAssetURL url, (path) =>
-        ad.asset_url = path
-        @log.write name: 'AdCache', message:
-          """
-          cache entry for #{url} exists?: #{@store[url]?}
-          """
-        @push(ad)
-        callback()
+    @fetchPathByAssetURL url, (path) =>
+      ad.asset_url = path
+      @log.write name: 'AdCache', message:
+        """
+        cache entry for #{url} exists?: #{@store[url]?}
+        """
+      @push(ad)
+      callback()
 
 
 module.exports = AdCache
