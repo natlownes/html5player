@@ -7,7 +7,6 @@ chai.use(require('sinon-chai'))
 TestAjax = require './test_ajax'
 
 
-
 beforeEach ->
   class Binder extends inject.Binder
     configure: ->

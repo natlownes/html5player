@@ -21,8 +21,7 @@
   },
   "dependencies": {
     "deferred":           "0.7.1",
-    "honk-di":            "0.0.10",
-    "react":              "0.12.x"
+    "honk-di":            "0.0.10"
   },
   "devDependencies": {
     "chai":                "1.9.x",
