@@ -8,6 +8,7 @@ ProofOfPlay         = require './proof_of_play'
 
 
 module.exports = {
+  AdCache
   AdRequest
   AdStream
   Ajax
