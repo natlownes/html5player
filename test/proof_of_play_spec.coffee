@@ -58,6 +58,77 @@ describe 'ProofOfPlay', ->
 
     @pop.write(ad)
 
+  it 'should remove that ad from its internal buffer', (done) ->
+    ad =
+      id: 'some-id'
+      proof_of_play_url: 'http://pop.example.com/played?v=1'
+      html5player:
+        was_played: true
+
+    verify = =>
+      expect(@pop._writableState).to.have.length 0
+      done()
+
+    @http.match url: ad.proof_of_play_url, type: 'GET', (req, resolve) =>
+      expect(@pop._writableState).to.have.length 1
+      resolve({})
+      setTimeout verify, 1
+
+    expect(@pop._writableState).to.have.length 0
+    @pop.write(ad)
+
+  context 'when a PoP request fails', ->
+
+    beforeEach ->
+      @popUrl = 'http://pop.example.com/played?v=2'
+      @http.match url: @popUrl, type: 'GET', (req, resolve, reject) =>
+        reject()
+
+    it 'should leave the PoP in the internal buffer', (done) ->
+      ad =
+        id: 'some-id'
+        proof_of_play_url: @popUrl
+        html5player:
+          was_played: true
+
+      verify = =>
+        expect(@pop._writableState).to.have.length 1
+        done()
+
+      @http.match url: @popUrl, type: 'GET', (req, resolve, reject) =>
+        expect(@pop._writableState).to.have.length 1
+        reject({})
+        setTimeout verify, 1
+
+      expect(@pop._writableState).to.have.length 0
+      @pop.write(ad)
+
+  context 'when PoP expire fails', ->
+
+    beforeEach ->
+      @expireUrl = 'http://pop.example.com/expire?v=2'
+      @http.match url: @expireUrl, type: 'GET', (req, resolve, reject) =>
+        reject()
+
+    it 'should leave the PoP in the internal buffer', (done) ->
+      ad =
+        id: 'some-id'
+        expiration_url: @expireUrl
+        html5player:
+          was_played: false
+
+      verify = =>
+        expect(@pop._writableState).to.have.length 1
+        done()
+
+      @http.match url: @popUrl, type: 'GET', (req, resolve, reject) =>
+        expect(@pop._writableState).to.have.length 1
+        reject({})
+        setTimeout verify, 1
+
+      expect(@pop._writableState).to.have.length 0
+      @pop.write(ad)
+
   context 'when piped to a consuming stream', ->
 
     it 'should pipe the PoP response after PoP request success', (done) ->
@@ -143,3 +214,4 @@ describe 'ProofOfPlay', ->
           done()
 
         @pop.confirm(ad).then(verify)
+

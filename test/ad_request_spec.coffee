@@ -40,6 +40,10 @@ describe 'AdRequest', ->
       body = @request.body()
       expect(body.device_id).to.equal 'YOUR_DEVICE_ID'
 
+    it 'should have the venue_id', ->
+      body = @request.body()
+      expect(body.venue_id).to.equal 'YOUR_VENUE_ID'
+
     it 'should have the number_of_screens', ->
       body = @request.body()
       expect(body.number_of_screens).to.equal 1

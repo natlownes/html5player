@@ -13,6 +13,11 @@ class Player extends Transform
   _timeoutId:  null
   _currentAd:  null
 
+  @setAsPlayed: (ad, wasPlayed) ->
+    ad?['html5player'] =
+      was_played: wasPlayed
+    ad
+
   constructor: ->
     super(highWaterMark: 0, objectMode: true)
     @video.addEventListener 'ended', @_videoFinished
@@ -29,7 +34,7 @@ class Player extends Transform
     duration = advertisement.length_in_milliseconds
     finished = =>
       clearTimeout(@_timeoutId)
-      ad = @_setAsPlayed(advertisement, true)
+      ad = Player.setAsPlayed(advertisement, true)
       @log.write name: 'Player', message: 'image stopping'
       callback(null, ad)
 
@@ -58,18 +63,13 @@ class Player extends Transform
     else if advertisement.mime_type.match(/^video/)
       @playVideo(advertisement, callback)
     else
-      callback(null, @_setAsPlayed(advertisement, false))
+      callback(null, Player.setAsPlayed(advertisement, false))
 
   _videoFinished: =>
     clearTimeout(@_timeoutId)
-    ad = @_setAsPlayed(@_currentAd, true)
+    ad = Player.setAsPlayed(@_currentAd, true)
     @log.write name: 'Player', message: 'video stopping'
     @_transformState.afterTransform(null, ad)
-
-  _setAsPlayed: (ad, wasPlayed) ->
-    ad?['html5player'] =
-      was_played: wasPlayed
-    ad
 
 
 module.exports = Player

@@ -26,6 +26,7 @@ class AdRequest
     latitude:           @config.latitude
     longitude:          @config.longitude
     network_id:         @config.networkId
+    venue_id:           @config.venueId
     number_of_screens:  1
 
   supportedMedia: ->
