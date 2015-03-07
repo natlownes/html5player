@@ -32,11 +32,12 @@ class AdRequest
   supportedMedia: ->
     # assume that all browsers can at least deal with these
     media  = ['image/gif', 'image/jpeg', 'image/png', 'video/webm']
-    for m in @navigator.mimeTypes
-      media.push(m.type)
-    for type in (@config.mimeTypes or [])
-      media.push(type)
-    media
+    if @config.mimeTypes?.length > 0
+      @config.mimeTypes
+    else
+      for m in @navigator.mimeTypes
+        media.push(m.type)
+      media
 
   _displayArea: ->
     if not @config.displayArea

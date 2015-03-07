@@ -75,8 +75,8 @@ describe 'AdRequest', ->
 
     it 'should add mimetypes to the display area `supported_media`', ->
       displayArea = @request.body().display_area
-      expect(displayArea[0].supported_media).to.include 'image/gif'
-      expect(displayArea[0].supported_media).to.include 'image/jpeg'
+      expect(displayArea[0].supported_media).to.exist
+      expect(displayArea[0].supported_media).to.include 'text/x-injected-test-value'
 
     it 'should have the device_attribute array', ->
       body = @request.body()
@@ -94,9 +94,7 @@ describe 'AdRequest', ->
         requestBody = JSON.parse(req.data)
         mimeTypes = requestBody.display_area[0].supported_media
         expect(mimeTypes).to.exist
-        expect(mimeTypes).to.include 'image/png'
-        expect(mimeTypes).to.include 'image/jpeg'
-        expect(mimeTypes).to.include 'image/gif'
+        expect(mimeTypes).to.include 'text/x-injected-test-value'
         done()
 
       @request.fetch()
@@ -125,19 +123,59 @@ describe 'AdRequest', ->
 
   describe '#supportedMedia', ->
 
-    it 'should return a list of supported mime types, images by default', ->
-      mimeTypes = @request.supportedMedia()
+    context 'when config.mimeTypes is undefined', ->
 
-      expect(mimeTypes).to.include 'image/gif'
-      expect(mimeTypes).to.include 'image/jpeg'
-      expect(mimeTypes).to.include 'image/png'
+      beforeEach ->
+        @_origMimeTypes = @request.config.mimeTypes
+        @request.config.mimeTypes = undefined
 
-    it 'should return a list including injected mime types', ->
-      mimeTypes = @request.supportedMedia()
+      afterEach ->
+        @request.config.mimeTypes = @_origMimeTypes
 
-      expect(mimeTypes).to.include 'text/x-injected-test-value'
+      it 'should return a list of mime types supported by browsers', ->
+        mimeTypes = @request.supportedMedia()
 
-    it 'should return a list include mime types read from window.navigator', ->
-      mimeTypes = @request.supportedMedia()
+        expect(mimeTypes).to.include 'image/gif'
+        expect(mimeTypes).to.include 'image/jpeg'
+        expect(mimeTypes).to.include 'image/png'
+        expect(mimeTypes).to.include 'video/webm'
 
-      expect(mimeTypes).to.include 'text/x-navigator-mime-type'
+      it 'should return a list include mime types read from window.navigator', ->
+        mimeTypes = @request.supportedMedia()
+
+        expect(mimeTypes).to.include 'text/x-navigator-mime-type'
+
+    context 'when config.mimeTypes is empty list', ->
+
+      beforeEach ->
+        @_origMimeTypes = @request.config.mimeTypes
+        @request.config.mimeTypes = []
+
+      afterEach ->
+        @request.config.mimeTypes = @_origMimeTypes
+
+      it 'should return a list of default mime types supported by browsers', ->
+        mimeTypes = @request.supportedMedia()
+
+        expect(mimeTypes).to.include 'image/gif'
+        expect(mimeTypes).to.include 'image/jpeg'
+        expect(mimeTypes).to.include 'image/png'
+        expect(mimeTypes).to.include 'video/webm'
+
+    context 'when config.MimeTypes is not empty', ->
+
+      beforeEach ->
+        @_origMimeTypes = @request.config.mimeTypes
+        @request.config.mimeTypes = ['text/x-injected-test-value']
+
+      afterEach ->
+        @request.config.mimeTypes = @_origMimeTypes
+
+      it 'should not be empty', ->
+        expect(@request.config.mimeTypes.length).to.be.at.least 1
+
+      it 'should return a list including only injected mime types', ->
+        mimeTypes = @request.supportedMedia()
+
+        expect(mimeTypes).to.include 'text/x-injected-test-value'
+        expect(mimeTypes).to.have.length 1
