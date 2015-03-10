@@ -15,23 +15,22 @@ class AdStream extends Readable
     setInterval @_check, @_checkInterval
 
   _read: ->
-    @log.write name: 'AdStream', message:
-      """
-      begin _read, readableState buffer len #{@_readableState.buffer.length},
+    @log.write name: 'AdStream', message: """
+      _read called
+      readableState buffer len #{@_readableState.buffer.length},
       flowing #{@_readableState.flowing}, reading #{@_readableState.reading},
-      len #{@_readableState.length}
-      """
+      len #{@_readableState.length}"""
+
     success = (response) =>
-      for ad in (response?.advertisement or [])
+      ads = response?.advertisement or []
+      @log.write name: 'AdStream', message: "returned ad count: #{ads.length}"
+      for ad in ads
         @push(ad)
-        @log.write name: 'AdStream', message:
-          """
-          pushed ad #{ad.asset_url},
-          readableState buffer len #{@_readableState.buffer.length},
-          flowing #{@_readableState.flowing}, reading #{@_readableState.reading},
-          len #{@_readableState.length}
-          """
-    @request.fetch().then(success).done()
+
+    error = (e) =>
+      @log.write name: 'AdStream', message: "request error #{JSON.stringify(e)}"
+
+    @request.fetch().then(success).catch(error).done()
 
   _check: =>
     if @_readableState.length < @_lowWaterMark()

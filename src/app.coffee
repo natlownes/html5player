@@ -5,8 +5,16 @@ Player              = require './player'
 ProofOfPlay         = require './proof_of_play'
 {Ajax, XMLHttpAjax} = require './ajax'
 
+defaultConfig = {}
+defaultConfig['vistar.api_key']    = '58b68728-11d4-41ed-964a-95dca7b59abd'
+defaultConfig['vistar.network_id'] = 'Ex-f6cCtRcydns8mcQqFWQ'
+defaultConfig['vistar.device_id']  = 'test-device-id'
+defaultConfig['vistar.url']        =
+  'http://dev.api.vistarmedia.com/api/v1/get_ad/json'
+config = window.Cortex?.getConfig() or defaultConfig
 
-window?.Vistar = (config) ->
+
+window?.Vistar = ->
   # an example app
   class Binder extends inject.Binder
     configure: ->
@@ -16,25 +24,27 @@ window?.Vistar = (config) ->
       @bindConstant('image').to document.querySelector('.player img')
       @bindConstant('download-cache').to {}
       @bindConstant('config').to
-        url:               'http://dev.api.vistarmedia.com/api/v1/get_ad/json'
-        apiKey:            '58b68728-11d4-41ed-964a-95dca7b59abd'
-        networkId:         'Ex-f6cCtRcydns8mcQqFWQ'
+        url:               config['vistar.url']
+        apiKey:            config['vistar.api_key']
+        networkId:         config['vistar.network_id']
+        deviceId:          config['vistar.device_id']
+        venueId:           config['vistar.venue_id']
         width:             1280
         height:            720
         allowAudio:        true
         directConnection:  false
-        deviceId:          'YOUR_DEVICE_ID'
-        venueId:           'YOUR_VENUE_ID'
         latitude:          39.9859241
         longitude:         -75.1299363
         queueSize:         10
+        debug:             false
+        mimeTypes:         ['image/gif', 'image/jpeg', 'image/png', 'video/webm']
         displayArea: [
           {
             id:               'display-0'
-            width:             1280
-            height:            720
+            width:            1280
+            height:           720
             allow_audio:      false
-            cpm_floor_cents:  90
+            cpm_floor_cents:  Number(config['vistar.cpm_floor_cents'] or 0)
           }
         ]
 

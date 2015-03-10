@@ -1,4 +1,5 @@
 inject = require 'honk-di'
+Logger = require './logger'
 {Ajax} = require './ajax'
 
 
@@ -6,14 +7,17 @@ class AdRequest
 
   config:     inject 'config'
   http:       inject Ajax
+  log:        inject Logger
   navigator:  inject 'navigator'
 
   fetch: ->
+    body = JSON.stringify(@body())
+    @log.write name: 'AdRequest', message: "#{@config.url} POST #{body}"
     @http.request
       type:      'POST'
       url:       @config.url
       dataType:  'json'
-      data:      JSON.stringify(@body())
+      data:      body
 
   body: ->
     # number_of_screens is deprecated
