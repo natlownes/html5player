@@ -11,6 +11,7 @@ defaultConfig['vistar.network_id'] = 'Ex-f6cCtRcydns8mcQqFWQ'
 defaultConfig['vistar.device_id']  = 'test-device-id'
 defaultConfig['vistar.url']        =
   'http://dev.api.vistarmedia.com/api/v1/get_ad/json'
+
 config = window.Cortex?.getConfig() or defaultConfig
 
 
@@ -27,7 +28,7 @@ window?.Vistar = ->
         url:               config['vistar.url']
         apiKey:            config['vistar.api_key']
         networkId:         config['vistar.network_id']
-        deviceId:          config['vistar.device_id']
+        deviceId:          window.Cortex?.player?.id() or config['vistar.device_id']
         venueId:           config['vistar.venue_id']
         width:             1280
         height:            720
