@@ -61,7 +61,6 @@ window?.Vistar = ->
   # running
   window.__vistarplayer =
     ads:     ads
-    cache:   cache
     player:  player
     pop:     pop
     store:   store
