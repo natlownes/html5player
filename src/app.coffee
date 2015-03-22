@@ -1,8 +1,8 @@
 inject              = require 'honk-di'
-AdCache             = require './ad_cache'
-AdStream            = require './ad_stream'
+
 Player              = require './player'
 ProofOfPlay         = require './proof_of_play'
+VariedAdStream      = require './varied_ad_stream'
 {Ajax, XMLHttpAjax} = require './ajax'
 
 defaultConfig = {}
@@ -53,8 +53,7 @@ window?.Vistar = ->
 
   store  = injector.getInstance 'download-cache'
 
-  ads    = injector.getInstance AdStream
-  cache  = injector.getInstance AdCache
+  ads    = injector.getInstance VariedAdStream
   player = injector.getInstance Player
   pop    = injector.getInstance ProofOfPlay
 
@@ -68,6 +67,5 @@ window?.Vistar = ->
     store:   store
 
   ads
-    .pipe(cache)
     .pipe(player)
     .pipe(pop)
