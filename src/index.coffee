@@ -1,6 +1,7 @@
 AdCache             = require './ad_cache'
 AdRequest           = require './ad_request'
 AdStream            = require './ad_stream'
+VariedAdStream      = require './varied_ad_stream'
 App                 = require './app'
 Player              = require './player'
 ProofOfPlay         = require './proof_of_play'
@@ -15,4 +16,5 @@ module.exports = {
   Player
   ProofOfPlay
   XMLHttpAjax
+  VariedAdStream
 }
