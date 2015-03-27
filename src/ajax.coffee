@@ -40,6 +40,8 @@ class XMLHttpAjax extends Ajax
       else
         deferred.reject(e)
 
+    xhr.onerror = deferred.reject
+
     xhr.open(method, url, true)
     xhr.send(options.data)
 

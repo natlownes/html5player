@@ -41,7 +41,11 @@ class VariedAdStream extends VarietyStream
 
     error = (e) =>
       @_log.write name: 'AdStream', message: "request error #{JSON.stringify(e)}"
-      callback([])
+      cb = ->
+        callback([])
+      # error was most likely due to an internet problem. backoff a bit in
+      # order not to flood the console with error messages.
+      setTimeout cb, 1000
 
     @_adRequest.fetch().then(success).catch(error).done()
 
