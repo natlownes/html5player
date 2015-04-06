@@ -41,10 +41,10 @@ class ProofOfPlay extends Transform
         # flag is set, status code will be 0. Otherwise, status will be set to
         # HTTP status code. We need to drop the PoP request on server errors.
         if e?.currentTarget?.status == 0
-          @log.write name: 'ProofOfPlay', message: 'expire failed, adding back to the queue.', meta: ad
+          @log.write name: 'ProofOfPlay', message: 'confirm failed, adding back to the queue.', meta: ad
           setTimeout(write.bind(@), 5000)
         else
-          @log.write name: 'ProofOfPlay', message: 'expire failed, dropping the request.', meta: ad
+          @log.write name: 'ProofOfPlay', message: 'confirm failed, dropping the request.', meta: ad
     else
       @expire(ad).then (response) =>
         @_process(response, callback)
