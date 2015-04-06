@@ -30,18 +30,22 @@ class ProofOfPlay extends Transform
       data: JSON.stringify(display_time: ad.display_time)
 
   _transform: (ad, encoding, callback) ->
+    write = ->
+      @write ad
     if @_wasDisplayed(ad)
       @confirm(ad).then (response) =>
         @_process(response, callback)
       .catch (err) =>
         @log.write name: 'ProofOfPlay', message: 'confirm failed', meta: ad
         callback()
+        setTimeout(write.bind(@), 1000)
     else
       @expire(ad).then (response) =>
         @_process(response, callback)
       .catch (err) =>
         @log.write name: 'ProofOfPlay', message: 'expire failed', meta: ad
         callback()
+        setTimeout(write.bind(@), 1000)
 
   _wasDisplayed: (ad) ->
     ad.html5player?.was_played
