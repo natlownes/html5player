@@ -84,7 +84,7 @@ describe 'ProofOfPlay', ->
       @http.match url: @popUrl, type: 'GET', (req, resolve, reject) =>
         reject()
 
-    it 'should leave the PoP in the internal buffer', (done) ->
+    it 'should drop the PoP request', (done) ->
       ad =
         id: 'some-id'
         proof_of_play_url: @popUrl
@@ -92,7 +92,7 @@ describe 'ProofOfPlay', ->
           was_played: true
 
       verify = =>
-        expect(@pop._writableState).to.have.length 1
+        expect(@pop._writableState).to.have.length 0
         done()
 
       @http.match url: @popUrl, type: 'GET', (req, resolve, reject) =>
@@ -110,7 +110,7 @@ describe 'ProofOfPlay', ->
       @http.match url: @expireUrl, type: 'GET', (req, resolve, reject) =>
         reject()
 
-    it 'should leave the PoP in the internal buffer', (done) ->
+    it 'should drop the PoP request', (done) ->
       ad =
         id: 'some-id'
         expiration_url: @expireUrl
@@ -118,7 +118,7 @@ describe 'ProofOfPlay', ->
           was_played: false
 
       verify = =>
-        expect(@pop._writableState).to.have.length 1
+        expect(@pop._writableState).to.have.length 0
         done()
 
       @http.match url: @popUrl, type: 'GET', (req, resolve, reject) =>
