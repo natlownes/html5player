@@ -80,13 +80,9 @@ describe 'ProofOfPlay', ->
   context 'when a PoP request fails', ->
 
     beforeEach ->
-      @clock = sinon.useFakeTimers()
       @popUrl = 'http://pop.example.com/played?v=2'
       @http.match url: @popUrl, type: 'GET', (req, resolve, reject) =>
         reject()
-
-    afterEach ->
-      @clock.restore()
 
     it 'should leave the PoP in the internal buffer', (done) ->
       ad =
@@ -95,12 +91,14 @@ describe 'ProofOfPlay', ->
         html5player:
           was_played: true
 
-      @http.match url: @popUrl, type: 'GET', (req, resolve, reject) =>
+      verify = =>
+        expect(@pop._writableState).to.have.length 0
+        done()
+
+      @http.match {url: @popUrl, type: 'GET'}, (req, resolve, reject) =>
         expect(@pop._writableState).to.have.length 1
         reject({})
-        @clock.tick(2000)
-        expect(@pop._writableState).to.have.length 1
-        done()
+        setTimeout verify, 1000
 
       expect(@pop._writableState).to.have.length 0
       @pop.write(ad)
@@ -108,13 +106,9 @@ describe 'ProofOfPlay', ->
   context 'when PoP expire fails', ->
 
     beforeEach ->
-      @clock = sinon.useFakeTimers()
       @expireUrl = 'http://pop.example.com/expire?v=2'
       @http.match url: @expireUrl, type: 'GET', (req, resolve, reject) =>
         reject()
-
-    afterEach ->
-      @clock.restore()
 
     it 'should leave the PoP in the internal buffer', (done) ->
       ad =
@@ -123,12 +117,14 @@ describe 'ProofOfPlay', ->
         html5player:
           was_played: false
 
+      verify = =>
+        expect(@pop._writableState).to.have.length 0
+        done()
+
       @http.match url: @popUrl, type: 'GET', (req, resolve, reject) =>
         expect(@pop._writableState).to.have.length 1
         reject({})
-        @clock.tick(2000)
-        expect(@pop._writableState).to.have.length 1
-        done()
+        setTimeout verify, 1000
 
       expect(@pop._writableState).to.have.length 0
       @pop.write(ad)
