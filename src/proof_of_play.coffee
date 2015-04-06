@@ -33,9 +33,15 @@ class ProofOfPlay extends Transform
     if @_wasDisplayed(ad)
       @confirm(ad).then (response) =>
         @_process(response, callback)
+      .catch (err) =>
+        @log.write name: 'ProofOfPlay', message: 'confirm failed', meta: ad
+        callback()
     else
       @expire(ad).then (response) =>
         @_process(response, callback)
+      .catch (err) =>
+        @log.write name: 'ProofOfPlay', message: 'expire failed', meta: ad
+        callback()
 
   _wasDisplayed: (ad) ->
     ad.html5player?.was_played
