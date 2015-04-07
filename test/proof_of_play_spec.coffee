@@ -92,13 +92,13 @@ describe 'ProofOfPlay', ->
           was_played: true
 
       verify = =>
-        expect(@pop._writableState).to.have.length 1
+        expect(@pop._writableState).to.have.length 0
         done()
 
-      @http.match url: @popUrl, type: 'GET', (req, resolve, reject) =>
+      @http.match {url: @popUrl, type: 'GET'}, (req, resolve, reject) =>
         expect(@pop._writableState).to.have.length 1
         reject({})
-        setTimeout verify, 1
+        setTimeout verify, 1000
 
       expect(@pop._writableState).to.have.length 0
       @pop.write(ad)
@@ -118,13 +118,13 @@ describe 'ProofOfPlay', ->
           was_played: false
 
       verify = =>
-        expect(@pop._writableState).to.have.length 1
+        expect(@pop._writableState).to.have.length 0
         done()
 
       @http.match url: @popUrl, type: 'GET', (req, resolve, reject) =>
         expect(@pop._writableState).to.have.length 1
         reject({})
-        setTimeout verify, 1
+        setTimeout verify, 1000
 
       expect(@pop._writableState).to.have.length 0
       @pop.write(ad)
