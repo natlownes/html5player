@@ -30,7 +30,7 @@ class ProofOfPlay extends Transform
       data: JSON.stringify(display_time: ad.display_time)
 
   _transform: (ad, encoding, callback) ->
-    write = ->
+    write = =>
       @write ad
     if @_wasDisplayed(ad)
       @confirm(ad).then (response) =>
@@ -42,7 +42,7 @@ class ProofOfPlay extends Transform
         # HTTP status code. We need to drop the PoP request on server errors.
         if e?.currentTarget?.status == 0
           @log.write name: 'ProofOfPlay', message: 'confirm failed, adding back to the queue.', meta: ad
-          setTimeout(write.bind(@), 5000)
+          setTimeout(write, 5000)
         else
           @log.write name: 'ProofOfPlay', message: 'confirm failed, dropping the request.', meta: ad
     else
@@ -52,7 +52,7 @@ class ProofOfPlay extends Transform
         callback()
         if e?.currentTarget?.status == 0
           @log.write name: 'ProofOfPlay', message: 'expire failed, adding back to the queue.', meta: ad
-          setTimeout(write.bind(@), 5000)
+          setTimeout(write, 5000)
         else
           @log.write name: 'ProofOfPlay', message: 'expire failed, dropping the request.', meta: ad
 
