@@ -18,7 +18,7 @@ class Ajax
     if not options? then throw new Error('You must provide options')
     deferred = Deferred()
     @_request(options, deferred)
-    deferred.promise.then(options.success, options.error)
+    deferred.promise
 
 
 class XMLHttpAjax extends Ajax

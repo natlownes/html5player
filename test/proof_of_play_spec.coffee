@@ -52,7 +52,7 @@ describe 'ProofOfPlay', ->
       html5player:
         was_played: true
 
-    @http.match url: ad.proof_of_play_url, type: 'GET', (req, resolve) =>
+    @http.match url: ad.proof_of_play_url, type: 'POST', (req, resolve) =>
       resolve @fixtures.popResponse
       done()
 
@@ -69,7 +69,7 @@ describe 'ProofOfPlay', ->
       expect(@pop._writableState).to.have.length 0
       done()
 
-    @http.match url: ad.proof_of_play_url, type: 'GET', (req, resolve) =>
+    @http.match url: ad.proof_of_play_url, type: 'POST', (req, resolve) =>
       expect(@pop._writableState).to.have.length 1
       resolve({})
       setTimeout verify, 1
@@ -95,7 +95,7 @@ describe 'ProofOfPlay', ->
         expect(@pop._writableState).to.have.length 0
         done()
 
-      @http.match {url: @popUrl, type: 'GET'}, (req, resolve, reject) =>
+      @http.match {url: @popUrl, type: 'POST'}, (req, resolve, reject) =>
         expect(@pop._writableState).to.have.length 1
         reject({})
         setTimeout verify, 1000
@@ -107,8 +107,6 @@ describe 'ProofOfPlay', ->
 
     beforeEach ->
       @expireUrl = 'http://pop.example.com/expire?v=2'
-      @http.match url: @expireUrl, type: 'GET', (req, resolve, reject) =>
-        reject()
 
     it 'should leave the PoP in the internal buffer', (done) ->
       ad =
@@ -121,7 +119,7 @@ describe 'ProofOfPlay', ->
         expect(@pop._writableState).to.have.length 0
         done()
 
-      @http.match url: @popUrl, type: 'GET', (req, resolve, reject) =>
+      @http.match url: @expireUrl, type: 'GET', (req, resolve, reject) =>
         expect(@pop._writableState).to.have.length 1
         reject({})
         setTimeout verify, 1000
@@ -138,7 +136,7 @@ describe 'ProofOfPlay', ->
         html5player:
           was_played: true
 
-      @http.match url: ad.proof_of_play_url, type: 'GET', (req, resolve) =>
+      @http.match url: ad.proof_of_play_url, type: 'POST', (req, resolve) =>
         resolve @fixtures.popResponse
 
       @pop.pipe through2.obj (response) =>
@@ -206,7 +204,7 @@ describe 'ProofOfPlay', ->
           display_time: 140432423
           proof_of_play_url: 'http://pop.example.com/pop?v=1'
 
-        @http.match url: ad.proof_of_play_url, type: 'GET', (req, resolve) =>
+        @http.match url: ad.proof_of_play_url, type: 'POST', (req, resolve) =>
           resolve @fixtures.popResponse
 
         verify = (response) =>
