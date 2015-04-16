@@ -32,6 +32,7 @@ window?.Vistar = ->
         venueId:           config['vistar.venue_id']
         width:             1280
         height:            720
+        cacheAssets:       true
         allowAudio:        true
         directConnection:  false
         latitude:          39.9859241

@@ -25,6 +25,7 @@ beforeEach ->
         networkId:         'YOUR_NETWORK_ID'
         width:             1280
         height:            720
+        cacheAssets:       true
         allowAudio:        true
         directConnection:  false
         deviceId:          'YOUR_DEVICE_ID'

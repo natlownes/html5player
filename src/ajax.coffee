@@ -1,6 +1,6 @@
 inject   = require 'honk-di'
 Deferred = require 'deferred'
-
+Logger   = require './logger'
 
 now = -> (new Date).getTime()
 
@@ -65,6 +65,7 @@ class Download extends Ajax
   # be used, otherwise you'll get a 404 on the blob url
   cacheClearInterval:  15 * 60 * 1000
   http:                inject Ajax
+  log:                 inject Logger
   ttl:                 6 * 60 * 60 * 1000
   cache:               inject 'download-cache'
   net:                 window?.Cortex?.net
@@ -93,11 +94,16 @@ class Download extends Ajax
     url    = options.url
 
     if @net?.download
-      # TODO:  Hamza says the api for this will change from returning a promise
-      # to the usual node.js (err, callback) -> style.  keep an eye out for that
-      # and change this when applicable
-      @net.download url, cache: ttl, (path) ->
+      opts =
+        cache:
+          ttl: ttl
+          mode: 'normal'
+      @net.download url, opts, ((path) ->
         deferred.resolve(path)
+      ), ((e) =>
+        @_log.write name: 'Download', message: "Cortex cache error #{JSON.stringify(e)}"
+        deferred.reject(e)
+      )
     else
       if not @cache[url]
         request = @http.request url: url, responseType: 'blob', type: method
@@ -110,6 +116,9 @@ class Download extends Ajax
             mimeType:     response.type
             sizeInBytes:  response.size
           deferred.resolve(path)
+        .catch (e) =>
+          @_log.write name: 'Download', message: "Local cache error #{JSON.stringify(e)}"
+          deferred.reject(e)
       else
         @cache[url].lastSeenAt = now()
         deferred.resolve(@cache[url].dataUrl)
