@@ -1,20 +1,15 @@
 require './test_case'
 Deferred = require 'deferred'
 sinon    = require 'sinon'
-through2 = require 'through2'
 {expect} = require 'chai'
 
 VariedAdStream  = require '../src/varied_ad_stream'
-AdRequest       = require '../src/ad_request'
-{Ajax}          = require '../src/ajax'
 
 
 describe 'VariedAdStream', ->
 
   beforeEach ->
     @stream = @injector.getInstance VariedAdStream
-    @adRequest = @injector.getInstance AdRequest
-    @http = @injector.getInstance Ajax
 
   describe '_next', ->
     beforeEach ->
