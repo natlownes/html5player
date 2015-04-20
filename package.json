@@ -20,7 +20,7 @@
     "watch":          "gulp watch"
   },
   "dependencies": {
-    "ajax":     "https://s3.amazonaws.com/js.vistarmedia.com/ajax-e43347.tar.gz",
+    "ajax":     "https://s3.amazonaws.com/js.vistarmedia.com/ajax-e5edfc.tar.gz",
     "deferred": "0.7.1",
     "honk-di":  "0.0.10"
   },
