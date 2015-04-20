@@ -1,49 +1,10 @@
-inject   = require 'honk-di'
-Deferred = require 'deferred'
+inject        = require 'honk-di'
+Deferred      = require 'deferred'
+{Ajax}        = require 'ajax'
 
+Logger   = require './logger'
 
 now = -> (new Date).getTime()
-
-
-class Ajax
-  @scope: 'singleton'
-
-  constructor: ->
-    @ajax = @request.bind(this)
-
-  _request: (options, deferred) ->
-    throw new Error('Ajax._request is not implemented')
-
-  request: (options) ->
-    if not options? then throw new Error('You must provide options')
-    deferred = Deferred()
-    @_request(options, deferred)
-    deferred.promise.then(options.success, options.error)
-
-
-class XMLHttpAjax extends Ajax
-
-  _request: (options, deferred) ->
-    method = options.type or 'GET'
-    url    = options.url
-
-    xhr = new window.XMLHttpRequest()
-    xhr.responseType = options.responseType
-
-    xhr.onload = (e) =>
-      if xhr.status is 200
-        if xhr.responseType is 'blob'
-          return deferred.resolve(xhr.response)
-        switch options.dataType
-          when 'json' then deferred.resolve(JSON.parse(xhr.responseText))
-          else deferred.resolve(xhr.responseText)
-      else
-        deferred.reject(e)
-
-    xhr.onerror = deferred.reject
-
-    xhr.open(method, url, true)
-    xhr.send(options.data)
 
 
 sum = (list, acc=0) ->
@@ -65,6 +26,7 @@ class Download extends Ajax
   # be used, otherwise you'll get a 404 on the blob url
   cacheClearInterval:  15 * 60 * 1000
   http:                inject Ajax
+  log:                 inject Logger
   ttl:                 6 * 60 * 60 * 1000
   cache:               inject 'download-cache'
   net:                 window?.Cortex?.net
@@ -93,11 +55,16 @@ class Download extends Ajax
     url    = options.url
 
     if @net?.download
-      # TODO:  Hamza says the api for this will change from returning a promise
-      # to the usual node.js (err, callback) -> style.  keep an eye out for that
-      # and change this when applicable
-      @net.download url, cache: ttl, (path) ->
+      opts =
+        cache:
+          ttl: ttl
+          mode: 'normal'
+      @net.download url, opts, ((path) ->
         deferred.resolve(path)
+      ), ((e) =>
+        @_log.write name: 'Download', message: "Cortex cache error #{JSON.stringify(e)}"
+        deferred.reject(e)
+      )
     else
       if not @cache[url]
         request = @http.request url: url, responseType: 'blob', type: method
@@ -110,13 +77,12 @@ class Download extends Ajax
             mimeType:     response.type
             sizeInBytes:  response.size
           deferred.resolve(path)
+        .catch (e) =>
+          @_log.write name: 'Download', message: "Local cache error #{JSON.stringify(e)}"
+          deferred.reject(e)
       else
         @cache[url].lastSeenAt = now()
         deferred.resolve(@cache[url].dataUrl)
 
 
-module.exports = {
-  Ajax
-  Download
-  XMLHttpAjax
-}
+module.exports = Download

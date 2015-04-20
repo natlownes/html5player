@@ -3,7 +3,7 @@ inject              = require 'honk-di'
 Player              = require './player'
 ProofOfPlay         = require './proof_of_play'
 VariedAdStream      = require './varied_ad_stream'
-{Ajax, XMLHttpAjax} = require './ajax'
+{Ajax, XMLHttpAjax} = require 'ajax'
 
 defaultConfig = {}
 defaultConfig['vistar.api_key']    = '58b68728-11d4-41ed-964a-95dca7b59abd'
@@ -32,6 +32,7 @@ window?.Vistar = ->
         venueId:           config['vistar.venue_id']
         width:             1280
         height:            720
+        cacheAssets:       true
         allowAudio:        true
         directConnection:  false
         latitude:          39.9859241

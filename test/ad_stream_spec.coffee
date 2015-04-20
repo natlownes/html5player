@@ -4,7 +4,7 @@ sinon    = require 'sinon'
 
 AdRequest = require '../src/ad_request'
 AdStream  = require '../src/ad_stream'
-{Ajax}    = require '../src/ajax'
+{Ajax}    = require 'ajax'
 
 
 describe 'AdStream', ->
@@ -29,12 +29,12 @@ describe 'AdStream', ->
       url     = 'http://test.api.vistarmedia.com/api/v1/get_ad/json'
       id      = 0
 
-      @http.match url: url, type: 'POST', (req, resolve) =>
+      @http.match url: url, type: 'POST', (req, promise) =>
         ads = for ad in @fixtures.adResponse.advertisement
           ad = @clone(ad)
           ad.id = "id-#{++id}"
           ad
-        resolve advertisement: ads
+        promise.resolve advertisement: ads
 
     it 'should return an ad for each call to `read`', ->
       ad1 = @ads.read()
@@ -57,8 +57,8 @@ describe 'AdStream', ->
     beforeEach ->
       url = 'http://test.api.vistarmedia.com/api/v1/get_ad/json'
       id  = 0
-      @http.match url: url, type: 'POST', (req, resolve) =>
-        resolve advertisement: []
+      @http.match url: url, type: 'POST', (req, promise) =>
+        promise.resolve advertisement: []
 
     it.skip 'should call `read` again after 15 seconds', ->
       # TODO:  figure out why fake timers don't work here

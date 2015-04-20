@@ -2,7 +2,7 @@ require './test_case'
 {expect} = require 'chai'
 
 AdRequest = require '../src/ad_request'
-{Ajax}    = require '../src/ajax'
+{Ajax}    = require 'ajax'
 
 
 describe 'AdRequest', ->
@@ -21,7 +21,7 @@ describe 'AdRequest', ->
 
   it 'should make a POST request to the get_ad endpoint', (done) ->
     url = 'http://test.api.vistarmedia.com/api/v1/get_ad/json'
-    @http.match url: url, type: 'POST', (req, resolve) ->
+    @http.match url: url, type: 'POST', (req, promise) ->
       done()
 
     @request.fetch().then -> done()
@@ -90,7 +90,7 @@ describe 'AdRequest', ->
 
     it 'should include mime types in display_area supported_media', (done) ->
       url = 'http://test.api.vistarmedia.com/api/v1/get_ad/json'
-      @http.match url: url, type: 'POST', (req, resolve) ->
+      @http.match url: url, type: 'POST', (req, promise) ->
         requestBody = JSON.parse(req.data)
         mimeTypes = requestBody.display_area[0].supported_media
         expect(mimeTypes).to.exist
@@ -101,7 +101,7 @@ describe 'AdRequest', ->
 
     it 'should POST an ad request of the expected format', (done) ->
       url = 'http://test.api.vistarmedia.com/api/v1/get_ad/json'
-      @http.match url: url, type: 'POST', (req, resolve) ->
+      @http.match url: url, type: 'POST', (req, promise) ->
         requestBody = JSON.parse(req.data)
         expect(requestBody.network_id).to.exist
         expect(requestBody.api_key).to.exist
@@ -112,8 +112,8 @@ describe 'AdRequest', ->
 
     it 'should resolve with the ad response', (done) ->
       url = 'http://test.api.vistarmedia.com/api/v1/get_ad/json'
-      @http.match url: url, type: 'POST', (req, resolve) =>
-        resolve @fixtures.adResponse
+      @http.match url: url, type: 'POST', (req, promise) =>
+        promise.resolve @fixtures.adResponse
 
       success = (response) ->
         expect(response).to.be.an.instanceOf Object

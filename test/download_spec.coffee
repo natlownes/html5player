@@ -1,8 +1,8 @@
 require './test_case'
-sinon            = require 'sinon'
-through2         = require 'through2'
-{Ajax, Download} = require '../src/ajax'
-{expect}         = require 'chai'
+Download = require '../src/download'
+sinon    = require 'sinon'
+{Ajax}   = require 'ajax'
+{expect} = require 'chai'
 
 
 describe 'Download', ->
@@ -31,8 +31,8 @@ describe 'Download', ->
 
   it 'should calculate accurate cacheSizeInBytes', (done) ->
     assetUrl = 'http://detroit.gov/dice_game2.gif'
-    @http.match url: assetUrl, type: 'GET', (req, resolve) ->
-      resolve
+    @http.match url: assetUrl, type: 'GET', (req, promise) ->
+      promise.resolve
         size: 34523
         type: 'image/jpeg'
 
@@ -57,7 +57,7 @@ describe 'Download', ->
 
     it 'should make the request with responseType == "blob"', (done) ->
       assetUrl = 'http://detroit.gov/dice_game.gif'
-      @http.match url: assetUrl, type: 'GET', (req, resolve) ->
+      @http.match url: assetUrl, type: 'GET', (req, promise) ->
         expect(req.responseType).to.equal 'blob'
         done()
 
@@ -65,8 +65,8 @@ describe 'Download', ->
 
     it 'should add to the cache with cachedAt timestamp', (done) ->
       assetUrl = 'http://detroit.gov/dice_game.gif'
-      @http.match url: assetUrl, type: 'GET', (req, resolve) ->
-        resolve response: sinon.stub()
+      @http.match url: assetUrl, type: 'GET', (req, promise) ->
+        promise.resolve response: sinon.stub()
 
       @download.request(url: assetUrl).then (response) =>
         expect(@cache[assetUrl].cachedAt).to.equal @now
@@ -74,8 +74,8 @@ describe 'Download', ->
 
     it 'should put dataUrl from URL.createObjectURL in cache', (done) ->
       assetUrl = 'http://detroit.gov/dice_game.gif'
-      @http.match url: assetUrl, type: 'GET', (req, resolve) ->
-        resolve response: sinon.stub()
+      @http.match url: assetUrl, type: 'GET', (req, promise) ->
+        promise.resolve response: sinon.stub()
 
       @download.request(url: assetUrl).then (response) =>
         expect(@cache[assetUrl].dataUrl).to.equal 'blob:someblob'
@@ -83,8 +83,8 @@ describe 'Download', ->
 
     it 'should add to the cache the size (in bytes) of the asset', (done) ->
       assetUrl = 'http://detroit.gov/dice_game.gif'
-      @http.match url: assetUrl, type: 'GET', (req, resolve) ->
-        resolve size: 1234
+      @http.match url: assetUrl, type: 'GET', (req, promise) ->
+        promise.resolve size: 1234
 
       @download.request(url: assetUrl).then =>
         expect(@cache[assetUrl].sizeInBytes).to.equal 1234
@@ -92,8 +92,8 @@ describe 'Download', ->
 
     it 'should add to the cache the mimeType', (done) ->
       assetUrl = 'http://detroit.gov/dice_game.gif'
-      @http.match url: assetUrl, type: 'GET', (req, resolve) ->
-        resolve
+      @http.match url: assetUrl, type: 'GET', (req, promise) ->
+        promise.resolve
           size: 34523
           type: 'image/jpeg'
 
@@ -103,8 +103,8 @@ describe 'Download', ->
 
     it 'should resolve with the data uri', (done) ->
       assetUrl = 'http://detroit.gov/dice_game.gif'
-      @http.match url: assetUrl, type: 'GET', (req, resolve) ->
-        resolve
+      @http.match url: assetUrl, type: 'GET', (req, promise) ->
+        promise.resolve
           size: 34523
           type: 'image/jpeg'
 
@@ -125,8 +125,8 @@ describe 'Download', ->
       @download = @injector.getInstance Download
 
     it 'should update the lastSeenAt time of the cached asset', (done) ->
-      @http.match url: @assetUrl, type: 'GET', (req, resolve) ->
-        resolve
+      @http.match url: @assetUrl, type: 'GET', (req, promise) ->
+        promise.resolve
           size: 34523
           type: 'image/jpeg'
 
@@ -135,8 +135,8 @@ describe 'Download', ->
         done()
 
     it 'should resolve with the data url', (done) ->
-      @http.match url: @assetUrl, type: 'GET', (req, resolve) ->
-        resolve
+      @http.match url: @assetUrl, type: 'GET', (req, promise) ->
+        promise.resolve
           size: 34523
           type: 'image/jpeg'
 

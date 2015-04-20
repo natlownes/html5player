@@ -1,6 +1,6 @@
 inject      = require 'honk-di'
 Logger      = require './logger'
-{Ajax}      = require './ajax'
+{Ajax}      = require 'ajax'
 {Transform} = require('stream')
 
 

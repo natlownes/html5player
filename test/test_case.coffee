@@ -3,8 +3,8 @@ inject = require 'honk-di'
 chai   = require 'chai'
 chai.use(require('sinon-chai'))
 
-{Ajax}   = require '../src/ajax'
-TestAjax = require './test_ajax'
+{Ajax}   = require 'ajax'
+TestAjax = require 'ajax/test'
 
 
 beforeEach ->
@@ -25,6 +25,7 @@ beforeEach ->
         networkId:         'YOUR_NETWORK_ID'
         width:             1280
         height:            720
+        cacheAssets:       true
         allowAudio:        true
         directConnection:  false
         deviceId:          'YOUR_DEVICE_ID'

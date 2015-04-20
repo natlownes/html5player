@@ -1,6 +1,6 @@
 inject      = require 'honk-di'
 Logger      = require './logger'
-{Download}  = require './ajax'
+Download    = require './download'
 {Transform} = require('stream')
 
 now = -> (new Date).getTime()
