@@ -2,9 +2,9 @@ deferred = require 'deferred'
 inject   = require 'honk-di'
 
 AdRequest     = require './ad_request'
+Download      = require './download'
 Logger        = require './logger'
 VarietyStream = require './variety_stream'
-{Download}    = require './ajax'
 
 
 assetTTL = 6 * 60 * 60 * 1000

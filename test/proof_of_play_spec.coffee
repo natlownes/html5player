@@ -4,7 +4,7 @@ through2 = require 'through2'
 {expect} = require 'chai'
 
 ProofOfPlay = require '../src/proof_of_play'
-{Ajax}      = require '../src/ajax'
+{Ajax}      = require 'ajax'
 
 
 describe 'ProofOfPlay', ->
@@ -20,8 +20,8 @@ describe 'ProofOfPlay', ->
       html5player:
         was_played: false
 
-    @http.match url: ad.expiration_url, type: 'GET', (req, resolve) =>
-      resolve @fixtures.expireResponse
+    @http.match url: ad.expiration_url, type: 'GET', (req, promise) =>
+      promise.resolve @fixtures.expireResponse
 
     processFunc = sinon.spy(@pop, '_process')
 
@@ -39,8 +39,8 @@ describe 'ProofOfPlay', ->
       html5player:
         was_played: false
 
-    @http.match url: ad.expiration_url, type: 'GET', (req, resolve) =>
-      resolve @fixtures.expireResponse
+    @http.match url: ad.expiration_url, type: 'GET', (req, promise) =>
+      promise.resolve @fixtures.expireResponse
       done()
 
     @pop.write(ad)
@@ -52,8 +52,8 @@ describe 'ProofOfPlay', ->
       html5player:
         was_played: true
 
-    @http.match url: ad.proof_of_play_url, type: 'POST', (req, resolve) =>
-      resolve @fixtures.popResponse
+    @http.match url: ad.proof_of_play_url, type: 'POST', (req, promise) =>
+      promise.resolve @fixtures.popResponse
       done()
 
     @pop.write(ad)
@@ -69,9 +69,9 @@ describe 'ProofOfPlay', ->
       expect(@pop._writableState).to.have.length 0
       done()
 
-    @http.match url: ad.proof_of_play_url, type: 'POST', (req, resolve) =>
+    @http.match url: ad.proof_of_play_url, type: 'POST', (req, promise) =>
       expect(@pop._writableState).to.have.length 1
-      resolve({})
+      promise.resolve({})
       setTimeout verify, 1
 
     expect(@pop._writableState).to.have.length 0
@@ -81,8 +81,8 @@ describe 'ProofOfPlay', ->
 
     beforeEach ->
       @popUrl = 'http://pop.example.com/played?v=2'
-      @http.match url: @popUrl, type: 'GET', (req, resolve, reject) =>
-        reject()
+      @http.match url: @popUrl, type: 'GET', (req, promise) =>
+        promise.reject()
 
     it 'should leave the PoP in the internal buffer', (done) ->
       ad =
@@ -95,9 +95,9 @@ describe 'ProofOfPlay', ->
         expect(@pop._writableState).to.have.length 0
         done()
 
-      @http.match {url: @popUrl, type: 'POST'}, (req, resolve, reject) =>
+      @http.match {url: @popUrl, type: 'POST'}, (req, promise) =>
         expect(@pop._writableState).to.have.length 1
-        reject({})
+        promise.reject({})
         setTimeout verify, 1000
 
       expect(@pop._writableState).to.have.length 0
@@ -119,9 +119,9 @@ describe 'ProofOfPlay', ->
         expect(@pop._writableState).to.have.length 0
         done()
 
-      @http.match url: @expireUrl, type: 'GET', (req, resolve, reject) =>
+      @http.match url: @expireUrl, type: 'GET', (req, promise) =>
         expect(@pop._writableState).to.have.length 1
-        reject({})
+        promise.reject({})
         setTimeout verify, 1000
 
       expect(@pop._writableState).to.have.length 0
@@ -136,8 +136,8 @@ describe 'ProofOfPlay', ->
         html5player:
           was_played: true
 
-      @http.match url: ad.proof_of_play_url, type: 'POST', (req, resolve) =>
-        resolve @fixtures.popResponse
+      @http.match url: ad.proof_of_play_url, type: 'POST', (req, promise) =>
+        promise.resolve @fixtures.popResponse
 
       @pop.pipe through2.obj (response) =>
         expect(response).to.deep.equal @fixtures.popResponse
@@ -152,8 +152,8 @@ describe 'ProofOfPlay', ->
         html5player:
           was_played: false
 
-      @http.match url: ad.expiration_url, type: 'GET', (req, resolve) =>
-        resolve @fixtures.expireResponse
+      @http.match url: ad.expiration_url, type: 'GET', (req, promise) =>
+        promise.resolve @fixtures.expireResponse
 
       @pop.pipe through2.obj (response) =>
         expect(response).to.deep.equal @fixtures.expireResponse
@@ -172,8 +172,8 @@ describe 'ProofOfPlay', ->
           html5player:
             was_played: false
 
-        @http.match url: ad.expiration_url, type: 'GET', (req, resolve) =>
-          resolve @fixtures.expireResponse
+        @http.match url: ad.expiration_url, type: 'GET', (req, promise) =>
+          promise.resolve @fixtures.expireResponse
 
         verify = (response) =>
           expect(response).to.deep.equal @fixtures.expireResponse
@@ -189,9 +189,9 @@ describe 'ProofOfPlay', ->
         display_time: 1420824124
         proof_of_play_url: 'http://pop.example.com/pop?v=1'
 
-      @http.match url: ad.proof_of_play_url, type: 'POST', (req, resolve) =>
+      @http.match url: ad.proof_of_play_url, type: 'POST', (req, promise) =>
         expect(JSON.parse(req.data).display_time).to.equal 1420824124
-        resolve @fixtures.popResponse
+        promise.resolve @fixtures.popResponse
 
       @pop.confirm(ad).then (response) ->
         done()
@@ -204,8 +204,8 @@ describe 'ProofOfPlay', ->
           display_time: 140432423
           proof_of_play_url: 'http://pop.example.com/pop?v=1'
 
-        @http.match url: ad.proof_of_play_url, type: 'POST', (req, resolve) =>
-          resolve @fixtures.popResponse
+        @http.match url: ad.proof_of_play_url, type: 'POST', (req, promise) =>
+          promise.resolve @fixtures.popResponse
 
         verify = (response) =>
           expect(response).to.deep.equal @fixtures.popResponse

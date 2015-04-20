@@ -3,8 +3,8 @@ inject = require 'honk-di'
 chai   = require 'chai'
 chai.use(require('sinon-chai'))
 
-{Ajax}   = require '../src/ajax'
-TestAjax = require './test_ajax'
+{Ajax}   = require 'ajax'
+TestAjax = require 'ajax/test'
 
 
 beforeEach ->

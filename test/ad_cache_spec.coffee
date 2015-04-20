@@ -2,7 +2,7 @@ require './test_case'
 AdCache  = require '../src/ad_cache'
 sinon    = require 'sinon'
 through2 = require 'through2'
-{Ajax}   = require '../src/ajax'
+{Ajax}   = require 'ajax'
 {expect} = require 'chai'
 
 
@@ -27,8 +27,8 @@ describe 'AdCache', ->
     it 'should change the `ad.asset_url` to the dataUrl', (done) ->
       ad = @getAd()
       assetUrl = ad.asset_url
-      @http.match url: assetUrl, type: 'GET', (req, resolve) ->
-        resolve
+      @http.match url: assetUrl, type: 'GET', (req, promise) ->
+        promise.resolve
           size: 2000
           type: 'image/jpeg'
 

@@ -5,7 +5,8 @@ VariedAdStream      = require './varied_ad_stream'
 App                 = require './app'
 Player              = require './player'
 ProofOfPlay         = require './proof_of_play'
-{Ajax, XMLHttpAjax} = require './ajax'
+# continue to expose for backward compatibility
+{Ajax, XMLHttpAjax} = require 'ajax'
 
 
 module.exports = {
