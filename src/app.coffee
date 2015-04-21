@@ -9,6 +9,7 @@ defaultConfig = {}
 defaultConfig['vistar.api_key']    = '58b68728-11d4-41ed-964a-95dca7b59abd'
 defaultConfig['vistar.network_id'] = 'Ex-f6cCtRcydns8mcQqFWQ'
 defaultConfig['vistar.device_id']  = 'test-device-id'
+defaultConfig['vistar.debug']      = false
 defaultConfig['vistar.url']        =
   'http://dev.api.vistarmedia.com/api/v1/get_ad/json'
 
@@ -38,7 +39,7 @@ window?.Vistar = ->
         latitude:          39.9859241
         longitude:         -75.1299363
         queueSize:         10
-        debug:             false
+        debug:             !!defaultConfig['vistar.debug']
         mimeTypes:         ['image/gif', 'image/jpeg', 'image/png', 'video/webm']
         displayArea: [
           {

@@ -14,10 +14,11 @@ class AdRequest
     body = JSON.stringify(@body())
     @log.write name: 'AdRequest', message: "#{@config.url} POST #{body}"
     @http.request
-      type:      'POST'
-      url:       @config.url
-      dataType:  'json'
-      data:      body
+      type:             'POST'
+      url:              @config.url
+      dataType:         'json'
+      data:             body
+      withCredentials:  false
 
   body: ->
     # number_of_screens is deprecated

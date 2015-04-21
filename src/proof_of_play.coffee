@@ -16,18 +16,20 @@ class ProofOfPlay extends Transform
     @log.write name: 'ProofOfPlay', message: 'expiring', meta: ad
     url = ad.expiration_url
     @http.request
-      type:      'GET'
-      url:       url
-      dataType:  'json'
+      type:             'GET'
+      url:              url
+      dataType:         'json'
+      withCredentials:  false
 
   confirm: (ad) ->
     @log.write name: 'ProofOfPlay', message: 'confirming', meta: ad
     url = ad.proof_of_play_url
     @http.request
-      type:      'POST'
-      url:       url
-      dataType:  'json'
-      data: JSON.stringify(display_time: ad.display_time)
+      type:             'POST'
+      url:              url
+      dataType:         'json'
+      withCredentials:  false
+      data:             JSON.stringify(display_time:  ad.display_time)
 
   _transform: (ad, encoding, callback) ->
     write = =>
