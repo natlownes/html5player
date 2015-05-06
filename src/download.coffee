@@ -67,7 +67,11 @@ class Download extends Ajax
       )
     else
       if not @cache[url]
-        request = @http.request url: url, responseType: 'blob', type: method
+        request = @http.request
+          url:              url
+          responseType:     'blob'
+          type:             method
+          withCredentials:  false
         request.then (response) =>
           path = URL.createObjectURL(response)
           @cache[url] =
