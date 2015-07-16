@@ -35,11 +35,11 @@ class VariedAdStream extends VarietyStream
       if @_config.cacheAssets
         downloads = for ad in ads
           @_download.request(url: ad.asset_url, ttl: assetTTL)
-            .then((path) ->
+            .then (path) ->
               # We need to update the asset_url here so it points to the Cortex
               # (cached) location and not S3 or whatever. Typically the
               # asset_url is what is passed to Cortex#submitView / submitVideo.
-              ad.asset_url = path)
+              ad.asset_url = path
 
         deferred(downloads)
           .then -> callback(ads)
