@@ -8,7 +8,7 @@ class AdStream extends Readable
   config:          inject 'config'
   log:             inject Logger
   request:         inject AdRequest
-  _checkInterval:  100
+  _checkInterval:  1000
 
   constructor: ->
     super(objectMode: true, highWaterMark: (@config.queueSize or 16))
