@@ -43,14 +43,14 @@ describe 'AdCache', ->
     beforeEach ->
       @ad = @getAd()
       @assetUrl = @ad.asset_url
-      @store = @injector.getInstance 'download-cache'
-      @store[@assetUrl] =
+      @cache = @injector.getInstance AdCache
+      @cache.download._cache[@assetUrl] =
         cachedAt:     (new Date).getTime()
         lastSeenAt:   (new Date).getTime()
         dataUrl:      'blob:alreadygotit'
         sizeInBytes:  5000
         mimeType:     'image/png'
-      @cache = @injector.getInstance AdCache
+      @store = @cache.download._cache
 
       @now   = 142460040000
       @clock = sinon.useFakeTimers(@now)

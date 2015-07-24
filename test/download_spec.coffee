@@ -8,25 +8,28 @@ sinon    = require 'sinon'
 describe 'Download', ->
 
   beforeEach ->
-    @now            = 142460040000
-    @clock          = sinon.useFakeTimers(@now)
-    @http           = @injector.getInstance Ajax
-    @download       = @injector.getInstance Download
-    @cache          = @injector.getInstance 'download-cache'
+    @now     = 142460040000
+    @sandbox = sinon.sandbox.create
+      useFakeServer: false
+    @sandbox.useFakeTimers(@now)
+
+    @http     = @injector.getInstance Ajax
+    @download = @injector.getInstance Download
+    @cache    = @download._cache
 
   afterEach ->
-    @clock.restore()
+    @sandbox.restore()
 
   it 'should have a cacheSizeInBytes', ->
     expect(@download.cacheSizeInBytes()).to.equal 0
 
   it 'should calculate cacheSizeInBytes of the cache', ->
+    download = @injector.getInstance Download
     @cache['http://honk.example'] =
       cachedAt:     (new Date).getTime()
       dataUrl:      'blob://somethingsomething'
       sizeInBytes:  5000
       mimeType:     'image/png'
-    download = @injector.getInstance Download
     expect(download.cacheSizeInBytes()).to.equal 5000
 
   it 'should calculate accurate cacheSizeInBytes', (done) ->
@@ -165,7 +168,7 @@ describe 'Download', ->
       @download = @injector.getInstance Download
 
     it 'should remove expired assets from the store every 15 minutes', ->
-      @clock.tick(15 * 60 * 1000)
+      @sandbox.clock.tick(15 * 60 * 1000)
 
       expect(@cache['http://asset.example.com/1.jpg']).to.not.exist
       expect(@cache['http://asset.example.com/2.webm']).to.exist
@@ -173,7 +176,57 @@ describe 'Download', ->
     context 'and assets should expire', ->
 
       it 'should call URL.revokeObjectURL with the dataUrl', ->
-        @clock.tick(15 * 60 * 1000)
+        @sandbox.clock.tick(15 * 60 * 1000)
         expect(URL.revokeObjectURL).to.have.been.calledOnce
         expect(URL.revokeObjectURL).to.have.been
           .calledWith 'blob://somethingsomething1'
+
+  context 'when Cortex API is available', ->
+
+    beforeEach ->
+      @cortexDownload = @injector.getInstance Download
+
+    it 'should call Cortex.net.download', ->
+      fakeCortexNet =
+        download: sinon.spy()
+      @sandbox.stub @cortexDownload, 'net', fakeCortexNet
+      @cortexDownload.request url: 'http://example.com/honk.jpg'
+      expect(fakeCortexNet.download).to.have.been.calledWith(
+        'http://example.com/honk.jpg',
+        cache:
+          ttl: 21600000
+          mode: 'normal'
+      )
+
+    context 'on success', ->
+
+      it 'should resolve with the local file path', ->
+        fakeCortexNet =
+          download: (uri, opts, success, error) ->
+            success('file:///tmp/.somepath')
+        @sandbox.stub @cortexDownload, 'net', fakeCortexNet
+        confirm = sinon.spy()
+        req = @cortexDownload.request url: 'http://example.com/honk.jpg'
+        req
+          .then confirm
+          .done()
+
+        expect(confirm).to.have.been.calledOnce
+        expect(confirm).to.have.been.calledWith 'file:///tmp/.somepath'
+
+    context 'on error', ->
+
+      it 'should reject with the error', ->
+        err = new Error('WRONG')
+        fakeCortexNet =
+          download: (uri, opts, success, error) ->
+            error(err)
+        @sandbox.stub @cortexDownload, 'net', fakeCortexNet
+        confirm = sinon.spy()
+        req = @cortexDownload.request url: 'http://example.com/honk.jpg'
+        req
+          .catch confirm
+          .done()
+
+        expect(confirm).to.have.been.calledOnce
+        expect(confirm).to.have.been.calledWith err

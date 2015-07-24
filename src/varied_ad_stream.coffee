@@ -41,9 +41,13 @@ class VariedAdStream extends VarietyStream
               # asset_url is what is passed to Cortex#submitView / submitVideo.
               ad.asset_url = path
 
-        deferred(downloads)
-          .then -> callback(ads)
-          .catch -> callback([])
+        deferred(downloads...)
+          .then ->
+            callback(ads)
+          .catch ->
+            succeeded = (ad for ad, i in ads when not downloads[i].failed)
+            callback(succeeded)
+          .done()
       else
         callback(ads)
 

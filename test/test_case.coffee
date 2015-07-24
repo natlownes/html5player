@@ -18,7 +18,6 @@ beforeEach ->
         userAgent: "AppleWebKit"
       @bindConstant('video').to document.querySelector('.player video')
       @bindConstant('image').to document.querySelector('.player img')
-      @bindConstant('download-cache').to {}
       @bindConstant('config').to
         url:               'http://test.api.vistarmedia.com/api/v1/get_ad/json'
         apiKey:            'YOUR_API_KEY'
