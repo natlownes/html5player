@@ -26,26 +26,26 @@ class Download extends Ajax
   # be used, otherwise you'll get a 404 on the blob url
   cacheClearInterval:  15 * 60 * 1000
   http:                inject Ajax
-  log:                 inject Logger
   ttl:                 6 * 60 * 60 * 1000
-  cache:               inject 'download-cache'
-  net:                 window?.Cortex?.net
+  _log:                inject Logger
 
   constructor: ->
+    @net    = window?.Cortex?.net
+    @_cache = {}
     if @shouldCache()
       @_intervalId = setInterval @expire, @cacheClearInterval
     super()
 
   expire: =>
     started = now()
-    for url, entry of @cache
+    for url, entry of @_cache
       diff = (started - entry.lastSeenAt)
       if diff > @ttl
         URL.revokeObjectURL(entry.dataUrl)
-        delete @cache[url]
+        delete @_cache[url]
 
   cacheSizeInBytes: ->
-    sum(o.sizeInBytes for url, o of @cache)
+    sum(o.sizeInBytes for url, o of @_cache)
 
   shouldCache: -> not @net?.download?
 
@@ -59,14 +59,12 @@ class Download extends Ajax
         cache:
           ttl: ttl
           mode: 'normal'
-      @net.download url, opts, ((path) ->
-        deferred.resolve(path)
-      ), ((e) =>
-        @_log.write name: 'Download', message: "Cortex cache error #{JSON.stringify(e)}"
-        deferred.reject(e)
-      )
+      @net.download url, opts,
+        (path) => @_cortexDownloadSuccess(deferred, path)
+      ,
+        (e) => @_cortexDownloadError(deferred, e)
     else
-      if not @cache[url]
+      if not @_cache[url]
         request = @http.request
           url:              url
           responseType:     'blob'
@@ -74,7 +72,7 @@ class Download extends Ajax
           withCredentials:  false
         request.then (response) =>
           path = URL.createObjectURL(response)
-          @cache[url] =
+          @_cache[url] =
             cachedAt:     now()
             dataUrl:      path
             lastSeenAt:   now()
@@ -82,11 +80,22 @@ class Download extends Ajax
             sizeInBytes:  response.size
           deferred.resolve(path)
         .catch (e) =>
-          @_log.write name: 'Download', message: "Local cache error #{JSON.stringify(e)}"
+          @_log.write
+            name: 'Download',
+            message: "Local cache error #{JSON.stringify(e)}"
           deferred.reject(e)
       else
-        @cache[url].lastSeenAt = now()
-        deferred.resolve(@cache[url].dataUrl)
+        @_cache[url].lastSeenAt = now()
+        deferred.resolve(@_cache[url].dataUrl)
+
+  _cortexDownloadSuccess: (deferred, path) ->
+    deferred.resolve(path)
+
+  _cortexDownloadError: (deferred, e) =>
+    @_log.write
+      name: 'Download',
+      message: "Cortex cache error #{JSON.stringify(e)}"
+    deferred.reject(e)
 
 
 module.exports = Download

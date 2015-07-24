@@ -24,7 +24,6 @@ window?.Vistar = ->
       @bindConstant('navigator').to window.navigator
       @bindConstant('video').to document.querySelector('.player video')
       @bindConstant('image').to document.querySelector('.player img')
-      @bindConstant('download-cache').to {}
       @bindConstant('config').to
         url:               config['vistar.url']
         apiKey:            config['vistar.api_key']
@@ -53,8 +52,6 @@ window?.Vistar = ->
 
   injector = new inject.Injector(new Binder)
 
-  store  = injector.getInstance 'download-cache'
-
   ads    = injector.getInstance VariedAdStream
   player = injector.getInstance Player
   pop    = injector.getInstance ProofOfPlay
@@ -65,7 +62,6 @@ window?.Vistar = ->
     ads:     ads
     player:  player
     pop:     pop
-    store:   store
 
   ads
     .pipe(player)
