@@ -2,7 +2,7 @@
   "author":       "Vistar Media <engineering@vistarmedia.com>",
   "name":         "vistar-html5player",
   "description":  "An HTML 5 Player for Vistar Media assets.",
-  "version":      "1.4.1",
+  "version":      "1.4.2",
   "homepage":     "http://kb.vistarmedia.com/display/sell/HTML5+Player",
   "repository": {
     "type":  "git",
@@ -20,7 +20,7 @@
     "watch":          "gulp watch"
   },
   "dependencies": {
-    "ajax":     "https://s3.amazonaws.com/js.vistarmedia.com/ajax-8ec66a.tar.gz",
+    "ajax":     "https://s3.amazonaws.com/js.vistarmedia.com/ajax-af2c5d.tar.gz",
     "deferred": "0.7.1",
     "honk-di":  "0.0.10"
   },
