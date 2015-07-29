@@ -1,3 +1,8 @@
+# 1.4.2
+
+* upgrade Ajax version.  should have no effect unless this project is required
+  by a project that also uses the specific Ajax project listed in package.json
+
 # 1.4.1
 
 same as 1.4.0:  messed up version tags at some point
