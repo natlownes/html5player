@@ -9,6 +9,12 @@ VarietyStream = require './variety_stream'
 
 assetTTL = 6 * 60 * 60 * 1000
 
+# Ad stream is unhealthy if there hasn't been any ad requests in past 3
+# minutes.
+lastAdRequestTimeThreshold = 3 * 60 * 1000
+# Ad stream is unhealthy if there hasn't been any successful ad requests in
+# past 15 minutes.
+lastSuccessfulAdRequestTimeThreshold = 15 * 60 * 1000
 
 class VariedAdStream extends VarietyStream
   _adRequest:  inject AdRequest
@@ -19,6 +25,10 @@ class VariedAdStream extends VarietyStream
   constructor: ->
     super(@_config.queueSize or 16)
 
+    @_isRunning = false
+    @_lastAdRequestTime = 0
+    @_lastSuccessfulAdRequestTime = 0
+
   # The "unique" identity (in terms of adjacency) for an advertisement will be
   # its creative id. The VarietyStream will attempt to not show the same ads
   # back to back.
@@ -26,8 +36,10 @@ class VariedAdStream extends VarietyStream
     ad.creative_id
 
   _next: (callback) ->
+    @_isRunning = true
 
     success = (response) =>
+      @_lastSuccessfulAdRequestTime = new Date().getTime()
       ads = response?.advertisement or []
 
       @_log.write name: 'AdStream', message: "Returned #{ads.length} ads"
@@ -59,7 +71,31 @@ class VariedAdStream extends VarietyStream
       # order not to flood the console with error messages.
       setTimeout cb, 1000
 
+    @_lastAdRequestTime = new Date().getTime()
     @_adRequest.fetch().then(success).catch(error)
+
+  onHealthCheck: ->
+    if not @_isRunning
+      return status: true
+
+    now = new Date().getTime()
+    threshold = @_config.healthCheck?.lastAdRequestTimeThreshold ||
+      lastAdRequestTimeThreshold
+    if @_lastAdRequestTime + threshold < now
+      return {
+        status: false
+        reason: "No ad requests in past #{threshold / (60 * 1000)} minutes"
+      }
+
+    threshold = @_config.healthCheck?.lastSuccessfulAdRequestTimeThreshold ||
+      lastSuccessfulAdRequestTimeThreshold
+    if @_lastSuccessfulAdRequestTime + threshold < now
+      return {
+        status: false
+        reason: "No successful ad requests in past #{threshold / (60 * 1000)} minutes"
+      }
+
+    return status: true
 
 
 module.exports = VariedAdStream

@@ -3,6 +3,12 @@ Logger      = require './logger'
 {Ajax}      = require 'ajax'
 {Transform} = require('stream')
 
+# PoP stream is unhealthy if there hasn't been any PoP requests in past 3
+# minutes.
+lastPopRequestTimeThreshold = 3 * 60 * 1000
+# PoP stream is unhealthy if there hasn't been any successful PoP requests in
+# past 15 minutes.
+lastSuccessfulPopRequestTimeThreshold = 15 * 60 * 1000
 
 class ProofOfPlay extends Transform
   http:    inject Ajax
@@ -11,6 +17,10 @@ class ProofOfPlay extends Transform
 
   constructor: ->
     super(objectMode: true, highWaterMark: 100)
+
+    @_isRunning = false
+    @_lastPopRequestTime = 0
+    @_lastSuccessfulPopRequestTime = 0
 
   expire: (ad) ->
     @log.write name: 'ProofOfPlay', message: 'expiring', meta: ad
@@ -32,10 +42,13 @@ class ProofOfPlay extends Transform
       data:             JSON.stringify(display_time:  ad.display_time)
 
   _transform: (ad, encoding, callback) ->
+    @_isRunning = true
+    @_lastPopRequestTime = new Date().getTime()
     write = =>
       @write ad
     if @_wasDisplayed(ad)
       @confirm(ad).then (response) =>
+        @_lastSuccessfulPopRequestTime = new Date().getTime()
         @_process(response, callback)
       .catch (e) =>
         callback()
@@ -49,6 +62,7 @@ class ProofOfPlay extends Transform
           @log.write name: 'ProofOfPlay', message: 'confirm failed, dropping the request.', meta: ad
     else
       @expire(ad).then (response) =>
+        @_lastSuccessfulPopRequestTime = new Date().getTime()
         @_process(response, callback)
       .catch (e) =>
         callback()
@@ -70,6 +84,29 @@ class ProofOfPlay extends Transform
       cb(null, response)
     else
       cb()
+
+  onHealthCheck: ->
+    if not @_isRunning
+      return status: true
+
+    now = new Date().getTime()
+    threshold = @config.healthCheck?.lastPopRequestTimeThreshold ||
+      lastPopRequestTimeThreshold
+    if @_lastPopRequestTime + threshold < now
+      return {
+        status: false
+        reason: "No PoP requests in past #{threshold / (60 * 1000)} minutes"
+      }
+
+    threshold = @config.healthCheck?.lastSuccessfulPopRequestTimeThreshold ||
+      lastSuccessfulPopRequestTimeThreshold
+    if @_lastSuccessfulPopRequestTime + threshold < now
+      return {
+        status: false
+        reason: "No successful PoP requests in past #{threshold / (60 * 1000)} minutes"
+      }
+
+    return status: true
 
 
 module.exports = ProofOfPlay
