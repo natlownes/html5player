@@ -71,6 +71,8 @@ describe 'VariedAdStream', ->
     context 'when caching assets', ->
 
       it 'should set asset_url to the path _download.request resolves with', ->
+        org_asset_url_1 = @fixtures.adResponse.advertisement[0].asset_url
+        org_asset_url_2 = @fixtures.adResponse.advertisement[1].asset_url
         i = 0
         @sandbox.stub @stream._adRequest, 'fetch', =>
           d = Deferred()
@@ -90,7 +92,9 @@ describe 'VariedAdStream', ->
         [ads] = cb.lastCall.args
         expect(ads).to.have.length 2
         [first, second] = ads
+        expect(first.original_asset_url).to.equal org_asset_url_1
         expect(first.asset_url).to.equal 'file:///tmp/local/path-1.jpg'
+        expect(second.original_asset_url).to.equal org_asset_url_2
         expect(second.asset_url).to.equal 'file:///tmp/local/path-2.jpg'
 
       it 'should call with empty array if all cache calls fail', ->

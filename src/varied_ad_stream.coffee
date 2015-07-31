@@ -36,6 +36,11 @@ class VariedAdStream extends VarietyStream
         downloads = for ad in ads
           @_download.request(url: ad.asset_url, ttl: assetTTL)
             .then (path) ->
+              # Save the original asset url to let Cortex apps use it for
+              # reporting purposes. Until we have a better alternative in ad
+              # response, asset url is the only sensible piece we can share
+              # with end users.
+              ad.original_asset_url = ad.asset_url
               # We need to update the asset_url here so it points to the local
               # (cached) location and not S3 or whatever. Typically the
               # asset_url is what is passed to Cortex#submitView / submitVideo.
