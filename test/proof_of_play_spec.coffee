@@ -20,26 +20,16 @@ describe 'ProofOfPlay', ->
     afterEach ->
       @clock.restore()
 
-    it 'should set the isRunning flag on first request', ->
-      ad =
-        id: 'some-id'
-        expiration_url: 'http://pop.example.com/expire?v=1'
-        html5player:
-          was_played: false
-      expect(@pop._isRunning).to.be.false
-      @pop.write(ad)
-      expect(@pop._isRunning).to.be.true
-
     it 'should set the last PoP request time on each request', ->
       ad =
         id: 'some-id'
         expiration_url: 'http://pop.example.com/expire?v=1'
         html5player:
           was_played: false
-      expect(@pop._lastPopRequestTime).to.equal 0
+      expect(@pop.lastRequestTime).to.equal 0
       @clock.tick(500)
       @pop.write(ad)
-      expect(@pop._lastPopRequestTime).to.equal 500
+      expect(@pop.lastRequestTime).to.equal 500
 
     it 'should set the last successful PoP request time when confirm succeeds', ->
       ad =
@@ -52,10 +42,10 @@ describe 'ProofOfPlay', ->
       @http.match url: ad.proof_of_play_url, type: 'POST', (req, promise) =>
         expect(JSON.parse(req.data).display_time).to.equal 1420824124
         promise.resolve @fixtures.popResponse
-      expect(@pop._lastSuccessfulPopRequestTime).to.equal 0
+      expect(@pop.lastSuccessfulRequestTime).to.equal 0
       @clock.tick(500)
       @pop.write(ad)
-      expect(@pop._lastSuccessfulPopRequestTime).to.equal 500
+      expect(@pop.lastSuccessfulRequestTime).to.equal 500
 
     it 'should not set the last successful PoP request time when confirm fails', ->
       ad =
@@ -68,10 +58,10 @@ describe 'ProofOfPlay', ->
       @http.match url: ad.proof_of_play_url, type: 'POST', (req, promise) =>
         expect(JSON.parse(req.data).display_time).to.equal 1420824124
         promise.reject()
-      expect(@pop._lastSuccessfulPopRequestTime).to.equal 0
+      expect(@pop.lastSuccessfulRequestTime).to.equal 0
       @clock.tick(500)
       @pop.write(ad)
-      expect(@pop._lastSuccessfulPopRequestTime).to.equal 0
+      expect(@pop.lastSuccessfulRequestTime).to.equal 0
 
     it 'should set the last successful PoP request time when expire succeeds', ->
       ad =
@@ -83,10 +73,10 @@ describe 'ProofOfPlay', ->
       @http.match url: ad.expiration_url, type: 'GET', (req, promise) =>
         promise.resolve @fixtures.expireResponse
 
-      expect(@pop._lastSuccessfulPopRequestTime).to.equal 0
+      expect(@pop.lastSuccessfulRequestTime).to.equal 0
       @clock.tick(500)
       @pop.write(ad)
-      expect(@pop._lastSuccessfulPopRequestTime).to.equal 500
+      expect(@pop.lastSuccessfulRequestTime).to.equal 500
 
     it 'should not set the last successful PoP request time when expire fails', ->
       ad =
@@ -98,10 +88,10 @@ describe 'ProofOfPlay', ->
       @http.match url: ad.expiration_url, type: 'GET', (req, promise) =>
         promise.reject()
 
-      expect(@pop._lastSuccessfulPopRequestTime).to.equal 0
+      expect(@pop.lastSuccessfulRequestTime).to.equal 0
       @clock.tick(500)
       @pop.write(ad)
-      expect(@pop._lastSuccessfulPopRequestTime).to.equal 0
+      expect(@pop.lastSuccessfulRequestTime).to.equal 0
 
   it 'should not fill the _readableState.buffer if not piped to anything', ->
     ad =
@@ -302,67 +292,3 @@ describe 'ProofOfPlay', ->
           done()
 
         @pop.confirm(ad).then(verify)
-
-  describe 'onHealthCheck', ->
-    beforeEach ->
-      @clock = sinon.useFakeTimers()
-
-    afterEach ->
-      @clock.restore()
-
-    it 'should succeed if the stream has not started yet', ->
-      res = @pop.onHealthCheck()
-      expect(res.status).to.be.true
-
-    it 'should fail when last pop request time exceeds the threshold', ->
-      ad =
-        id: 'some-id'
-        expiration_url: 'http://pop.example.com/expire?v=1'
-        html5player:
-          was_played: false
-      @pop.write(ad)
-      @clock.tick 500
-      res = @pop.onHealthCheck()
-      expect(res.status).to.be.true
-      @clock.tick 3 * 60 * 1000
-      res = @pop.onHealthCheck()
-      expect(res.status).to.be.false
-      expect(res.reason).to.match /No PoP requests/
-
-    it 'should fail when last successful PoP request time exceeds the threshold', ->
-      ad =
-        id: 'some-id'
-        display_time: 1420824124
-        proof_of_play_url: 'http://pop.example.com/pop?v=1'
-        html5player:
-          was_played: true
-
-      firstCall = true
-      @http.match url: ad.proof_of_play_url, type: 'POST', (req, promise) =>
-        expect(JSON.parse(req.data).display_time).to.equal 1420824124
-        if firstCall
-          promise.resolve @fixtures.popResponse
-          firstCall = false
-        else
-          promise.reject()
-
-      @pop.write(ad)
-      @clock.tick 500
-      res = @pop.onHealthCheck()
-      expect(res.status).to.be.true
-      @clock.tick 15 * 60 * 1000
-      @pop.write(ad)
-      res = @pop.onHealthCheck()
-      expect(res.status).to.be.false
-      expect(res.reason).to.match /No successful PoP requests/
-
-    it 'should succeed when everything is alright', ->
-      ad =
-        id: 'some-id'
-        expiration_url: 'http://pop.example.com/expire?v=1'
-        html5player:
-          was_played: false
-      @pop.write(ad)
-      @clock.tick 500
-      res = @pop.onHealthCheck()
-      expect(res.status).to.be.true

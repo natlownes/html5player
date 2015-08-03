@@ -18,26 +18,21 @@ describe 'VariedAdStream', ->
 
   describe '_next', ->
 
-    it 'should set the isRunning flag', ->
-      expect(@stream._isRunning).to.be.false
-      @stream._next ->
-      expect(@stream._isRunning).to.be.true
-
     it 'should set last ad request time', ->
-      expect(@stream._lastAdRequestTime).to.equal 0
+      expect(@stream.lastRequestTime).to.equal 0
       @sandbox.clock.tick 500
       @stream._next ->
-      expect(@stream._lastAdRequestTime).to.equal 500
+      expect(@stream.lastRequestTime).to.equal 500
 
     it 'should set last successful ad request time when fetch succeeds', ->
       fetch = sinon.stub @stream._adRequest, 'fetch', ->
         d = Deferred()
         d.resolve()
         d.promise
-      expect(@stream._lastSuccessfulAdRequestTime).to.equal 0
+      expect(@stream.lastSuccessfulRequestTime).to.equal 0
       @sandbox.clock.tick 500
       @stream._next ->
-      expect(@stream._lastSuccessfulAdRequestTime).to.equal 500
+      expect(@stream.lastSuccessfulRequestTime).to.equal 500
 
     it 'should make an ad request', ->
       fetch = sinon.stub @stream._adRequest, 'fetch', ->
@@ -179,44 +174,3 @@ describe 'VariedAdStream', ->
           expect(ads).to.have.length 1
           [first] = ads
           expect(first.asset_url).to.equal 'file:///tmp/local/path-1.jpg'
-
-  describe 'onHealthCheck', ->
-    it 'should succeed if the stream has not started yet', ->
-      res = @stream.onHealthCheck()
-      expect(res.status).to.be.true
-
-    it 'should fail when last ad request time exceeds the threshold', ->
-      @stream._next ->
-      @sandbox.clock.tick 500
-      res = @stream.onHealthCheck()
-      expect(res.status).to.be.true
-      @sandbox.clock.tick 3 * 60 * 1000
-      res = @stream.onHealthCheck()
-      expect(res.status).to.be.false
-      expect(res.reason).to.match /No ad requests/
-
-    it 'should fail when last successful ad request time exceeds the threshold', ->
-      firstCall = true
-      @sandbox.stub @stream._adRequest, 'fetch', =>
-        d = Deferred()
-        if firstCall
-          d.resolve()
-          firstCall = false
-        else
-          d.reject()
-        d.promise
-      @stream._next ->
-      @sandbox.clock.tick 500
-      res = @stream.onHealthCheck()
-      expect(res.status).to.be.true
-      @sandbox.clock.tick 15 * 60 * 1000
-      @stream._next ->
-      res = @stream.onHealthCheck()
-      expect(res.status).to.be.false
-      expect(res.reason).to.match /No successful ad requests/
-
-    it 'should succeed when everything is alright', ->
-      @stream._next ->
-      @sandbox.clock.tick 500
-      res = @stream.onHealthCheck()
-      expect(res.status).to.be.true
