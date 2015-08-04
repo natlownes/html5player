@@ -18,6 +18,22 @@ describe 'VariedAdStream', ->
 
   describe '_next', ->
 
+    it 'should set last ad request time', ->
+      expect(@stream.lastRequestTime).to.equal 0
+      @sandbox.clock.tick 500
+      @stream._next ->
+      expect(@stream.lastRequestTime).to.equal 500
+
+    it 'should set last successful ad request time when fetch succeeds', ->
+      fetch = sinon.stub @stream._adRequest, 'fetch', ->
+        d = Deferred()
+        d.resolve()
+        d.promise
+      expect(@stream.lastSuccessfulRequestTime).to.equal 0
+      @sandbox.clock.tick 500
+      @stream._next ->
+      expect(@stream.lastSuccessfulRequestTime).to.equal 500
+
     it 'should make an ad request', ->
       fetch = sinon.stub @stream._adRequest, 'fetch', ->
         d = Deferred()

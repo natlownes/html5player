@@ -3,7 +3,6 @@ Logger      = require './logger'
 {Ajax}      = require 'ajax'
 {Transform} = require('stream')
 
-
 class ProofOfPlay extends Transform
   http:    inject Ajax
   config:  inject 'config'
@@ -11,6 +10,9 @@ class ProofOfPlay extends Transform
 
   constructor: ->
     super(objectMode: true, highWaterMark: 100)
+
+    @lastRequestTime = 0
+    @lastSuccessfulRequestTime = 0
 
   expire: (ad) ->
     @log.write name: 'ProofOfPlay', message: 'expiring', meta: ad
@@ -32,10 +34,12 @@ class ProofOfPlay extends Transform
       data:             JSON.stringify(display_time:  ad.display_time)
 
   _transform: (ad, encoding, callback) ->
+    @lastRequestTime = new Date().getTime()
     write = =>
       @write ad
     if @_wasDisplayed(ad)
       @confirm(ad).then (response) =>
+        @lastSuccessfulRequestTime = new Date().getTime()
         @_process(response, callback)
       .catch (e) =>
         callback()
@@ -49,6 +53,7 @@ class ProofOfPlay extends Transform
           @log.write name: 'ProofOfPlay', message: 'confirm failed, dropping the request.', meta: ad
     else
       @expire(ad).then (response) =>
+        @lastSuccessfulRequestTime = new Date().getTime()
         @_process(response, callback)
       .catch (e) =>
         callback()
@@ -70,6 +75,5 @@ class ProofOfPlay extends Transform
       cb(null, response)
     else
       cb()
-
 
 module.exports = ProofOfPlay

@@ -9,7 +9,6 @@ VarietyStream = require './variety_stream'
 
 assetTTL = 6 * 60 * 60 * 1000
 
-
 class VariedAdStream extends VarietyStream
   _adRequest:  inject AdRequest
   _config:     inject 'config'
@@ -19,6 +18,9 @@ class VariedAdStream extends VarietyStream
   constructor: ->
     super(@_config.queueSize or 16)
 
+    @lastRequestTime = 0
+    @lastSuccessfulRequestTime = 0
+
   # The "unique" identity (in terms of adjacency) for an advertisement will be
   # its creative id. The VarietyStream will attempt to not show the same ads
   # back to back.
@@ -26,8 +28,8 @@ class VariedAdStream extends VarietyStream
     ad.creative_id
 
   _next: (callback) ->
-
     success = (response) =>
+      @lastSuccessfulRequestTime = new Date().getTime()
       ads = response?.advertisement or []
 
       @_log.write name: 'AdStream', message: "Returned #{ads.length} ads"
@@ -59,7 +61,7 @@ class VariedAdStream extends VarietyStream
       # order not to flood the console with error messages.
       setTimeout cb, 1000
 
+    @lastRequestTime = new Date().getTime()
     @_adRequest.fetch().then(success).catch(error)
-
 
 module.exports = VariedAdStream
