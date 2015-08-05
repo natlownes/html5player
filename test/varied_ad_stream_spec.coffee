@@ -10,8 +10,9 @@ describe 'VariedAdStream', ->
 
   beforeEach ->
     @sandbox = sinon.sandbox.create()
+    @now = new Date().getTime()
+    @sandbox.useFakeTimers(@now)
     @stream  = @injector.getInstance VariedAdStream
-    @sandbox.useFakeTimers()
 
   afterEach ->
     @sandbox.restore()
@@ -19,20 +20,20 @@ describe 'VariedAdStream', ->
   describe '_next', ->
 
     it 'should set last ad request time', ->
-      expect(@stream.lastRequestTime).to.equal 0
+      expect(@stream.lastRequestTime).to.equal @now
       @sandbox.clock.tick 500
       @stream._next ->
-      expect(@stream.lastRequestTime).to.equal 500
+      expect(@stream.lastRequestTime).to.equal @now + 500
 
     it 'should set last successful ad request time when fetch succeeds', ->
       fetch = sinon.stub @stream._adRequest, 'fetch', ->
         d = Deferred()
         d.resolve()
         d.promise
-      expect(@stream.lastSuccessfulRequestTime).to.equal 0
+      expect(@stream.lastSuccessfulRequestTime).to.equal @now
       @sandbox.clock.tick 500
       @stream._next ->
-      expect(@stream.lastSuccessfulRequestTime).to.equal 500
+      expect(@stream.lastSuccessfulRequestTime).to.equal @now + 500
 
     it 'should make an ad request', ->
       fetch = sinon.stub @stream._adRequest, 'fetch', ->

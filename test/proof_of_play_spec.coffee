@@ -15,7 +15,10 @@ describe 'ProofOfPlay', ->
 
   context 'update health check state', ->
     beforeEach ->
-      @clock = sinon.useFakeTimers()
+      @now = new Date().getTime()
+      @clock = sinon.useFakeTimers(@now)
+      # we need a new instance to make sure @pop uses the fake timers.
+      @pop  = @injector.getInstance ProofOfPlay
 
     afterEach ->
       @clock.restore()
@@ -26,10 +29,10 @@ describe 'ProofOfPlay', ->
         expiration_url: 'http://pop.example.com/expire?v=1'
         html5player:
           was_played: false
-      expect(@pop.lastRequestTime).to.equal 0
+      expect(@pop.lastRequestTime).to.equal @now
       @clock.tick(500)
       @pop.write(ad)
-      expect(@pop.lastRequestTime).to.equal 500
+      expect(@pop.lastRequestTime).to.equal @now + 500
 
     it 'should set the last successful PoP request time when confirm succeeds', ->
       ad =
@@ -42,10 +45,10 @@ describe 'ProofOfPlay', ->
       @http.match url: ad.proof_of_play_url, type: 'POST', (req, promise) =>
         expect(JSON.parse(req.data).display_time).to.equal 1420824124
         promise.resolve @fixtures.popResponse
-      expect(@pop.lastSuccessfulRequestTime).to.equal 0
+      expect(@pop.lastSuccessfulRequestTime).to.equal @now
       @clock.tick(500)
       @pop.write(ad)
-      expect(@pop.lastSuccessfulRequestTime).to.equal 500
+      expect(@pop.lastSuccessfulRequestTime).to.equal @now + 500
 
     it 'should not set the last successful PoP request time when confirm fails', ->
       ad =
@@ -58,10 +61,10 @@ describe 'ProofOfPlay', ->
       @http.match url: ad.proof_of_play_url, type: 'POST', (req, promise) =>
         expect(JSON.parse(req.data).display_time).to.equal 1420824124
         promise.reject()
-      expect(@pop.lastSuccessfulRequestTime).to.equal 0
+      expect(@pop.lastSuccessfulRequestTime).to.equal @now
       @clock.tick(500)
       @pop.write(ad)
-      expect(@pop.lastSuccessfulRequestTime).to.equal 0
+      expect(@pop.lastSuccessfulRequestTime).to.equal @now
 
     it 'should set the last successful PoP request time when expire succeeds', ->
       ad =
@@ -73,10 +76,10 @@ describe 'ProofOfPlay', ->
       @http.match url: ad.expiration_url, type: 'GET', (req, promise) =>
         promise.resolve @fixtures.expireResponse
 
-      expect(@pop.lastSuccessfulRequestTime).to.equal 0
+      expect(@pop.lastSuccessfulRequestTime).to.equal @now
       @clock.tick(500)
       @pop.write(ad)
-      expect(@pop.lastSuccessfulRequestTime).to.equal 500
+      expect(@pop.lastSuccessfulRequestTime).to.equal @now + 500
 
     it 'should not set the last successful PoP request time when expire fails', ->
       ad =
@@ -88,10 +91,10 @@ describe 'ProofOfPlay', ->
       @http.match url: ad.expiration_url, type: 'GET', (req, promise) =>
         promise.reject()
 
-      expect(@pop.lastSuccessfulRequestTime).to.equal 0
+      expect(@pop.lastSuccessfulRequestTime).to.equal @now
       @clock.tick(500)
       @pop.write(ad)
-      expect(@pop.lastSuccessfulRequestTime).to.equal 0
+      expect(@pop.lastSuccessfulRequestTime).to.equal @now
 
   it 'should not fill the _readableState.buffer if not piped to anything', ->
     ad =
