@@ -11,8 +11,8 @@ class ProofOfPlay extends Transform
   constructor: ->
     super(objectMode: true, highWaterMark: 100)
 
-    @lastRequestTime = 0
-    @lastSuccessfulRequestTime = 0
+    @lastRequestTime = new Date().getTime()
+    @lastSuccessfulRequestTime = new Date().getTime()
 
   expire: (ad) ->
     @log.write name: 'ProofOfPlay', message: 'expiring', meta: ad

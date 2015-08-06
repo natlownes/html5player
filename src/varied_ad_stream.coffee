@@ -18,8 +18,8 @@ class VariedAdStream extends VarietyStream
   constructor: ->
     super(@_config.queueSize or 16)
 
-    @lastRequestTime = 0
-    @lastSuccessfulRequestTime = 0
+    @lastRequestTime = new Date().getTime()
+    @lastSuccessfulRequestTime = new Date().getTime()
 
   # The "unique" identity (in terms of adjacency) for an advertisement will be
   # its creative id. The VarietyStream will attempt to not show the same ads
