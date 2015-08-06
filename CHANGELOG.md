@@ -2,6 +2,11 @@
 
 an html5 Vistar Media ad request library.
 
+### 1.5.1
+
+* add `lastRequestTime` and `@lastSuccessfulRequestTime` attributes on
+  VariedAdStream and ProofOfPlay to be timestamps
+
 ### 1.5.0
 
 * add `lastRequestTime` and `@lastSuccessfulRequestTime` attributes to
