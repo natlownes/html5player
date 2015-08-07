@@ -16,6 +16,7 @@ sum = (list, acc=0) ->
 
 
 class Download extends Ajax
+  @__honk_clsid = 'Download'
   # "Download" is a class that uses Cortex.net.download (if available) for
   # downloading and caching assets, falling back to using a @store of data uris
   # if Cortex.net doesn't exist
