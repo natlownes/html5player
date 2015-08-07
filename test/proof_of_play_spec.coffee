@@ -262,7 +262,56 @@ describe 'ProofOfPlay', ->
           expect(response).to.deep.equal @fixtures.expireResponse
           done()
 
-        @pop.expire(ad).then(verify)
+        @pop.expire(ad).then(verify).done()
+
+    context 'on failure', ->
+
+      it 'should log', (done) ->
+        ad =
+          id: 'some-id'
+          expiration_url: 'http://pop.example.com/expire?v=1'
+          html5player:
+            was_played: false
+
+        @http.match url: ad.expiration_url, type: 'GET', (req, promise) =>
+          promise.reject {error: 'somethings fed'}
+
+        log = sinon.spy(@pop.log, 'write')
+
+        verify = (response) =>
+          expect(log).to.have.been.called.once
+          [msg] = log.lastCall.args
+          expect(msg.name).to.equal 'ProofOfPlay'
+          expect(msg.advertisement.id).to.equal 'some-id'
+          expect(msg.response.body.error).to.equal 'somethings fed'
+          done()
+
+        @pop.expire(ad).catch(verify).done()
+
+      it 'should log when net is down or server is down', (done) ->
+        ad =
+          id: 'some-id'
+          expiration_url: 'http://pop.example.com/expire?v=1'
+          html5player:
+            was_played: false
+
+        @http.match url: ad.expiration_url, type: 'GET', (req, promise) =>
+          # the arg to reject here similar to the XMLHttpProgressEvent we'd get
+          # were the network or ad server refusing requests
+          promise.reject
+            currentTarget:
+              status: 0
+
+        log = sinon.spy(@pop.log, 'write')
+
+        verify = (response) =>
+          expect(log).to.have.been.called.once
+          [msg] = log.lastCall.args
+          expect(msg.name).to.equal 'ProofOfPlay'
+          expect(msg.response.body).to.equal 'Server or device network down'
+          done()
+
+        @pop.expire(ad).catch(verify).done()
 
   describe '#confirm', ->
 

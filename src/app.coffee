@@ -13,6 +13,7 @@ defaultConfig['vistar.debug']      = false
 defaultConfig['vistar.url']        =
   'http://dev.api.vistarmedia.com/api/v1/get_ad/json'
 
+
 config = window.Cortex?.getConfig() or defaultConfig
 
 

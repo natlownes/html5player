@@ -1,5 +1,6 @@
 require './test_case'
 {expect} = require 'chai'
+{spy}    = require 'sinon'
 
 AdRequest = require '../src/ad_request'
 {Ajax}    = require 'ajax'
@@ -12,6 +13,8 @@ describe 'AdRequest', ->
     @request = @injector.getInstance AdRequest
     @http    = @injector.getInstance Ajax
 
+    @url = 'http://test.api.vistarmedia.com/api/v1/get_ad/json'
+
   it 'should inject a config', ->
     expect(@request.config).to.equal @injector.getInstance 'config'
 
@@ -20,8 +23,7 @@ describe 'AdRequest', ->
       .to.equal 'http://test.api.vistarmedia.com/api/v1/get_ad/json'
 
   it 'should make a POST request to the get_ad endpoint', (done) ->
-    url = 'http://test.api.vistarmedia.com/api/v1/get_ad/json'
-    @http.match url: url, type: 'POST', (req, promise) ->
+    @http.match url: @url, type: 'POST', (req, promise) ->
       done()
 
     @request.fetch().then -> done()
@@ -90,8 +92,7 @@ describe 'AdRequest', ->
   describe '#fetch', ->
 
     it 'should include mime types in display_area supported_media', (done) ->
-      url = 'http://test.api.vistarmedia.com/api/v1/get_ad/json'
-      @http.match url: url, type: 'POST', (req, promise) ->
+      @http.match url: @url, type: 'POST', (req, promise) ->
         requestBody = JSON.parse(req.data)
         mimeTypes = requestBody.display_area[0].supported_media
         expect(mimeTypes).to.exist
@@ -101,8 +102,7 @@ describe 'AdRequest', ->
       @request.fetch()
 
     it 'should POST an ad request of the expected format', (done) ->
-      url = 'http://test.api.vistarmedia.com/api/v1/get_ad/json'
-      @http.match url: url, type: 'POST', (req, promise) ->
+      @http.match url: @url, type: 'POST', (req, promise) ->
         requestBody = JSON.parse(req.data)
         expect(requestBody.network_id).to.exist
         expect(requestBody.api_key).to.exist
@@ -112,8 +112,7 @@ describe 'AdRequest', ->
       @request.fetch()
 
     it 'should resolve with the ad response', (done) ->
-      url = 'http://test.api.vistarmedia.com/api/v1/get_ad/json'
-      @http.match url: url, type: 'POST', (req, promise) =>
+      @http.match url: @url, type: 'POST', (req, promise) =>
         promise.resolve @fixtures.adResponse
 
       success = (response) ->
@@ -121,6 +120,54 @@ describe 'AdRequest', ->
         expect(response.advertisement).to.have.length 2
         done()
       @request.fetch().then(success).done()
+
+    it 'should log a successful request', (done) ->
+      @http.match url: @url, type: 'POST', (req, promise) =>
+        promise.resolve @fixtures.adResponse
+
+      log = spy(@request.log, 'write')
+
+      @request.fetch()
+        .then ->
+          expect(log).to.have.been.called.once
+          [msg] = log.lastCall.args
+          expect(msg.name).to.equal 'AdRequest'
+          done()
+        .done()
+
+    it 'should log a failed request', (done) ->
+      @http.match url: @url, type: 'POST', (req, promise) =>
+        promise.reject {status: '403', error: 'Network not authorized'}
+
+      log = spy(@request.log, 'write')
+
+      @request.fetch()
+        .catch ->
+          expect(log).to.have.been.called.once
+          [msg] = log.lastCall.args
+          expect(msg.name).to.equal 'AdRequest'
+          expect(msg.response.body.error).to.equal 'Network not authorized'
+          done()
+        .done()
+
+    it 'should log an attempt when network is down', (done) ->
+      @http.match url: @url, type: 'POST', (req, promise) =>
+        # the arg to reject here similar to the XMLHttpProgressEvent we'd get
+        # were the network or ad server refusing requests
+        promise.reject
+          currentTarget:
+            status: 0
+
+      log = spy(@request.log, 'write')
+
+      @request.fetch()
+        .catch ->
+          expect(log).to.have.been.called.once
+          [msg] = log.lastCall.args
+          expect(msg.name).to.equal 'AdRequest'
+          expect(msg.response.body).to.equal 'Server or device network down'
+          done()
+        .done()
 
   describe '#supportedMedia', ->
 

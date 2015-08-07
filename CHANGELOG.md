@@ -2,6 +2,16 @@
 
 an html5 Vistar Media ad request library.
 
+### 1.6.0
+
+Logging to give more detailed information.
+
+* log ProofOfPlay expire and success
+* rename the 'name' key on some logging messages to prepare for listening for or
+  dropping certain types of logging messages
+* expose Logger implementation to allow DI binding to it for custom logging
+  implementations
+
 ### 1.5.1
 
 * add `lastRequestTime` and `@lastSuccessfulRequestTime` attributes on
